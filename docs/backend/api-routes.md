@@ -34,6 +34,7 @@ Phase 2 adds authentication and role-based access control:
 ```
 
 **Validation Rules**
+
 - `username`: 3–30 characters, alphanumeric + underscore
 - `email`: Valid email format (must be unique)
 - `firstName` / `lastName`: Required, string
@@ -96,6 +97,7 @@ curl -X POST http://localhost:3000/api/auth/register \
 ```
 
 **Notes:**
+
 - Sets `auth_token` HttpOnly cookie (7-day expiration)
 - Password hash is verified but not returned
 - User object does not expose password or sensitive fields
@@ -239,6 +241,7 @@ curl http://localhost:3000/api/auth/me \
 ```
 
 **Key Behavior Changes (Phase 2)**
+
 - Bets are now tied to the authenticated user's `userId`
 - Unique constraint: one bet per user per tournament (enforced at DB level)
 - Updating an existing bet: Finds by `{userId, tournamentId}` and updates predictions
@@ -307,6 +310,7 @@ curl -X POST http://localhost:3000/api/bets \
 ```
 
 **Key Behavior Changes (Phase 2)**
+
 - Gets only the authenticated user's bet (filters by `userId`)
 - Requires `tournamentId` query parameter
 
