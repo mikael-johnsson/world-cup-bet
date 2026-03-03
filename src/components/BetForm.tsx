@@ -1,0 +1,215 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useForm, FormProvider, useWatch } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { betSchema, BetInput } from "@/lib/validationSchemas";
+import GroupStageSection from "./GroupStageSection";
+import KnockoutSection from "./KnockoutSection";
+import Link from "next/link";
+
+interface BetFormProps {
+  tournamentId: string;
+  tournamentData: any; // Full tournament document, this should be changed
+}
+
+interface AuthUser {
+  userId: string;
+  username: string;
+  role: "user" | "admin";
+}
+
+export default function BetForm({
+  tournamentId,
+  tournamentData,
+}: BetFormProps) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+
+  // Check authentication status on component mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/auth/me");
+        if (response.ok) {
+          const user = await response.json();
+          setAuthUser(user);
+        } else {
+          setAuthUser(null);
+        }
+      } catch (error) {
+        console.error("Error checking authentication:", error);
+        setAuthUser(null);
+      } finally {
+        setIsAuthLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  const methods = useForm<BetInput>({
+    resolver: zodResolver(betSchema),
+    defaultValues: {
+      tournamentId,
+      predictions: {
+        groupStage: tournamentData.groups.map((group: any) => ({
+          groupName: group.name,
+          matches: group.fixtures.map((fixture: any) => ({
+            matchId: fixture.matchId,
+            predictedHomeGoals: 0,
+            predictedAwayGoals: 0,
+          })),
+        })),
+        knockout: [
+          {
+            round: "roundOf32",
+            matches: tournamentData.knockout.roundOf32.map((match: any) => ({
+              matchId: match.matchId,
+              predictedWinnerCode: "",
+            })),
+          },
+        ],
+      },
+    },
+  });
+
+  // Watch group stage to know when to show knockout
+  const groupStageWatch = useWatch({
+    control: methods.control,
+    name: "predictions.groupStage",
+  });
+
+  // Check if all group stage predictions are filled
+  const isGroupStageFilled =
+    groupStageWatch &&
+    groupStageWatch.every((group) =>
+      group.matches.every(
+        (match) =>
+          match.predictedHomeGoals >= 0 && match.predictedAwayGoals >= 0,
+      ),
+    );
+
+  const onSubmit = async (data: BetInput) => {
+    setIsSubmitting(true);
+    setSubmitMessage(null);
+
+    try {
+      const response = await fetch("/api/bets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to submit bet");
+      }
+
+      setSubmitMessage({
+        type: "success",
+        text: `${result.message} (ID: ${result.betId})`,
+      });
+
+      // Reset form on successful submission (optional)
+      // methods.reset();
+    } catch (error: any) {
+      setSubmitMessage({
+        type: "error",
+        text: error.message || "An error occurred",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  // If a Bet exists for this user, we should load it and populate the form (not implemented in this snippet)
+
+  // Show loading state while checking authentication
+  if (isAuthLoading) {
+    return (
+      <div className="space-y-8 max-w-6xl mx-auto">
+        <h1 className="text-3xl font-bold mb-8">World Cup Bet Form</h1>
+        <div className="p-4 bg-gray-100 text-gray-700 rounded-lg">
+          Loading...
+        </div>
+      </div>
+    );
+  }
+
+  // Show authentication prompt if not logged in
+  if (!authUser) {
+    return (
+      <div className="space-y-8 max-w-6xl mx-auto">
+        <h1 className="text-3xl font-bold mb-8">World Cup Bet Form</h1>
+        <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-blue-900 mb-4">
+            You need to be logged in to submit bets.
+          </p>
+          <div className="flex gap-4">
+            <Link
+              href="/login"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+            >
+              Log In
+            </Link>
+            <Link
+              href="/register"
+              className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 font-medium"
+            >
+              Sign Up
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <FormProvider {...methods}>
+      <form
+        onSubmit={methods.handleSubmit(onSubmit)}
+        className="space-y-8 max-w-6xl mx-auto"
+      >
+        <h1 className="text-3xl font-bold mb-8">World Cup Bet Form</h1>
+
+        {/* Group Stage Section */}
+        <GroupStageSection groups={tournamentData.groups} />
+
+        {/* Knockout Section - only show if group stage is filled */}
+        {isGroupStageFilled && (
+          <KnockoutSection matches={tournamentData.knockout.roundOf32} />
+        )}
+
+        {/* Submit Button */}
+        <div className="mt-8 flex gap-4">
+          <button
+            type="submit"
+            disabled={isSubmitting || !isGroupStageFilled}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold"
+          >
+            {isSubmitting ? "Submitting..." : "Submit Bet"}
+          </button>
+        </div>
+
+        {/* Messages */}
+        {submitMessage && (
+          <div
+            className={`p-4 rounded-lg ${
+              submitMessage.type === "success"
+                ? "bg-green-100 text-green-800 border border-green-300"
+                : "bg-red-100 text-red-800 border border-red-300"
+            }`}
+          >
+            {submitMessage.text}
+          </div>
+        )}
+      </form>
+    </FormProvider>
+  );
+}
