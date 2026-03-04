@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { betSchema, BetInput } from "@/lib/validationSchemas";
+import { deriveAdvancingTeams } from "@/lib/deriveAdvancingTeams";
 import GroupStageSection from "./GroupStageSection";
 import KnockoutSection from "./KnockoutSection";
 import Link from "next/link";
@@ -66,15 +67,18 @@ export default function BetForm({
             predictedAwayGoals: 0,
           })),
         })),
-        knockout: [
-          {
-            round: "roundOf32",
-            matches: tournamentData.knockout.roundOf32.map((match: any) => ({
-              matchId: match.matchId,
-              predictedWinnerCode: "",
-            })),
+        knockout: {
+          roundOf16: [],
+          quarterfinals: [],
+          semifinals: [],
+          final: [],
+          champion: "",
+          bronze: {
+            finalist1: "",
+            finalist2: "",
+            winner: "",
           },
-        ],
+        },
       },
     },
   });
@@ -94,6 +98,28 @@ export default function BetForm({
           match.predictedHomeGoals >= 0 && match.predictedAwayGoals >= 0,
       ),
     );
+
+  // Calculate the 32 teams that advance from group stage
+  const advancingTeams = useMemo(() => {
+    if (!isGroupStageFilled || !groupStageWatch) {
+      return [];
+    }
+    return deriveAdvancingTeams(groupStageWatch, tournamentData.groups);
+  }, [isGroupStageFilled, groupStageWatch, tournamentData.groups]);
+
+  // Create a Map of team code to team name for easy lookup
+  const teamMap = useMemo(() => {
+    const map = new Map<string, string>();
+
+    // Add all teams from all groups
+    tournamentData.groups.forEach((group: any) => {
+      group.teams.forEach((team: any) => {
+        map.set(team.code, team.name || team.code);
+      });
+    });
+
+    return map;
+  }, [tournamentData.groups]);
 
   const onSubmit = async (data: BetInput) => {
     setIsSubmitting(true);
@@ -182,8 +208,8 @@ export default function BetForm({
         <GroupStageSection groups={tournamentData.groups} />
 
         {/* Knockout Section - only show if group stage is filled */}
-        {isGroupStageFilled && (
-          <KnockoutSection matches={tournamentData.knockout.roundOf32} />
+        {isGroupStageFilled && advancingTeams.length === 32 && (
+          <KnockoutSection advancingTeams={advancingTeams} allTeams={teamMap} />
         )}
 
         {/* Submit Button */}

@@ -203,24 +203,67 @@ curl http://localhost:3000/api/auth/me \
             "matchId": "match_1",
             "predictedHomeGoals": 2,
             "predictedAwayGoals": 1
+          },
+          {
+            "matchId": "match_2",
+            "predictedHomeGoals": 1,
+            "predictedAwayGoals": 1
           }
         ]
       }
     ],
-    "knockout": [
-      {
-        "round": "roundOf32",
-        "matches": [
-          {
-            "matchId": "ko_match_1",
-            "predictedWinnerCode": "BRA"
-          }
-        ]
+    "knockout": {
+      "roundOf16": [
+        "BRA",
+        "FRA",
+        "GER",
+        "NED",
+        "ENG",
+        "ARG",
+        "ESP",
+        "URY",
+        "BEL",
+        "SWE",
+        "ITA",
+        "POR",
+        "JPN",
+        "AUS",
+        "MEX",
+        "KOR"
+      ],
+      "quarterfinals": ["BRA", "FRA", "GER", "NED", "ENG", "ARG", "ESP", "URY"],
+      "semifinals": ["BRA", "FRA", "GER", "NED"],
+      "final": ["BRA", "FRA"],
+      "champion": "BRA",
+      "bronze": {
+        "finalist1": "GER",
+        "finalist2": "NED",
+        "winner": "NED"
       }
-    ]
+    }
   }
 }
 ```
+
+**Knockout Progression Explained**
+
+The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression stores advancing teams per round:
+
+- **roundOf16** (16 teams): Top 2 from each group (24 teams) + best 8 third-place teams = 32 teams qualify. User predicts which 16 advance to Round of 16
+- **quarterfinals** (8 teams): User predicts which 8 Round of 16 teams advance to QF
+- **semifinals** (4 teams): User predicts which 4 QF teams advance to SF
+- **final** (2 teams): User predicts the final matchup
+- **champion**: User predicts the tournament winner
+- **bronze**: The two semifinal losers automatically play for bronze; user predicts the winner
+
+**Validation Rules**
+
+- `roundOf16`: Exactly 16 team codes (3-letter codes like "BRA", "FRA", "GER")
+- `quarterfinals`: Exactly 8 team codes
+- `semifinals`: Exactly 4 team codes
+- `final`: Exactly 2 team codes
+- `champion`: Non-empty team code
+- `bronze`: Object with two semifinal losers and the predicted winner
 
 **Response (Success - 201 or 200)**
 

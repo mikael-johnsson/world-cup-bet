@@ -7,7 +7,7 @@ export interface GroupFixture {
   matchId: string;
   homeTeam: Team;
   awayTeam: Team;
-  matchDate: Date;
+  matchDate: string; // ISO 8601 date string from server
   homeGoals?: number;
   awayGoals?: number;
   status: "pending" | "completed";
@@ -24,7 +24,7 @@ export interface KnockoutMatch {
   teamA: Team;
   teamB: Team;
   winner?: string; // team code
-  matchDate?: Date;
+  matchDate?: string; // ISO 8601 date string from server
   status: "pending" | "completed";
 }
 
@@ -41,7 +41,7 @@ export interface TournamentType {
   year: number;
   groups: Group[];
   knockout: KnockoutRound;
-  createdAt?: Date;
+  createdAt?: string; // ISO 8601 date string from server
 }
 
 export interface GroupStagePrediction {
@@ -53,17 +53,22 @@ export interface GroupStagePrediction {
   }[];
 }
 
-export interface KnockoutPrediction {
-  round: "roundOf32" | "roundOf16" | "quarterfinals" | "semifinals" | "final";
-  matches: {
-    matchId: string;
-    predictedWinnerCode: string;
-  }[];
+export interface KnockoutProgression {
+  roundOf16: string[]; // 16 team codes that advance from groups
+  quarterfinals: string[]; // 8 teams advance to QF
+  semifinals: string[]; // 4 teams advance to SF
+  final: string[]; // 2 teams in final
+  champion: string; // Winner of the final
+  bronze: {
+    finalist1: string; // First semifinal loser
+    finalist2: string; // Second semifinal loser
+    winner: string; // Winner of bronze medal match
+  };
 }
 
 export interface BetPredictions {
   groupStage: GroupStagePrediction[];
-  knockout: KnockoutPrediction[];
+  knockout: KnockoutProgression;
 }
 
 export interface Bet {
@@ -75,17 +80,17 @@ export interface Bet {
     groupStageScore: number;
     knockoutScore: number;
     totalScore: number;
-    lastCalculated?: Date;
+    lastCalculated?: string; // ISO 8601 date string
   };
-  createdAt?: Date;
-  submittedAt?: Date;
+  createdAt?: string; // ISO 8601 date string
+  submittedAt?: string; // ISO 8601 date string
 }
 
 export interface Solution {
   _id?: string;
   tournamentId: string;
   predictions: BetPredictions;
-  createdAt?: Date;
+  createdAt?: string; // ISO 8601 date string
 }
 
 export interface User {
@@ -96,7 +101,7 @@ export interface User {
   lastName: string;
   passwordHash: string;
   role: "user" | "admin";
-  createdAt?: Date;
+  createdAt?: string; // ISO 8601 date string
 }
 
 export interface TeamStanding {

@@ -12,18 +12,18 @@ export interface BetDocument extends Document {
         predictedAwayGoals: number;
       }>;
     }>;
-    knockout: Array<{
-      round:
-        | "roundOf32"
-        | "roundOf16"
-        | "quarterfinals"
-        | "semifinals"
-        | "final";
-      matches: Array<{
-        matchId: string;
-        predictedWinnerCode: string;
-      }>;
-    }>;
+    knockout: {
+      roundOf16: string[]; // 16 advancing team codes
+      quarterfinals: string[]; // 8 advancing team codes
+      semifinals: string[]; // 4 advancing team codes
+      final: string[]; // 2 advancing team codes (finalists)
+      champion: string; // Winner
+      bronze: {
+        finalist1: string; // First semifinal loser
+        finalist2: string; // Second semifinal loser
+        winner: string; // Bronze medal winner
+      };
+    };
   };
   scoring: {
     groupStageScore: number;
@@ -56,27 +56,18 @@ const betSchema = new Schema(
           ],
         },
       ],
-      knockout: [
-        {
-          round: {
-            type: String,
-            enum: [
-              "roundOf32",
-              "roundOf16",
-              "quarterfinals",
-              "semifinals",
-              "final",
-            ],
-            required: true,
-          },
-          matches: [
-            {
-              matchId: { type: String, required: true },
-              predictedWinnerCode: { type: String, required: true },
-            },
-          ],
+      knockout: {
+        roundOf16: { type: [String], required: true },
+        quarterfinals: { type: [String], required: true },
+        semifinals: { type: [String], required: true },
+        final: { type: [String], required: true },
+        champion: { type: String, required: true },
+        bronze: {
+          finalist1: { type: String, required: true },
+          finalist2: { type: String, required: true },
+          winner: { type: String, required: true },
         },
-      ],
+      },
     },
     scoring: {
       groupStageScore: { type: Number, default: 0 },

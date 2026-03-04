@@ -9,6 +9,7 @@ Welcome to the documentation for the 2026 World Cup betting website.
 ```
 docs/
 ├── architecture.md           # High-level system overview
+├── SPRINTS.md               # Development sprints & roadmap
 ├── backend/
 │   ├── api-routes.md        # All API endpoints explained
 │   ├── database-models.md   # MongoDB schemas and relationships
@@ -27,6 +28,11 @@ docs/
 
 1. Read [**architecture.md**](./architecture.md) — How NextJS unifies frontend/backend
 2. Read [**backend/database-models.md**](./backend/database-models.md) — What data is stored
+
+### For Understanding the Development Plan
+
+1. Read [**SPRINTS.md**](./SPRINTS.md) — Current sprints and roadmap for knockout rework
+2. Check [**AGENTS.md**](./AGENTS.md) — Coding standards and learning goals
 
 ### For Working with the API
 
@@ -87,6 +93,79 @@ We will implement Phase 2 in very small steps, pausing after each step for revie
 - Existing anonymous bets (without `userId`) are kept as legacy data.
 - New/updated bets in Phase 2 require authentication and are stored with `userId`.
 - No automatic backfill of old bets in this phase.
+
+---
+
+## Knockout Model Migration (Sprint 3)
+
+### Overview
+
+The knockout phase was refactored from a **match-based model** (old) to a **progression-based model** (new).
+
+**Old Model:** Users predicted winners for each knockout match (e.g., "BRA wins RoundOf32 Match 1")
+
+**New Model:** Users select advancing teams per round (e.g., "16 teams advance from Round of 32 to Round of 16")
+
+### Why?
+
+- More realistic: Users predict tournament path, not individual matches
+- Better UX: Staged progression (can only predict next round after completing current)
+- Simpler scoring: 1 point per correct team per round (no match complications)
+
+### Data Structure Changes
+
+#### Bets Collection
+
+```javascript
+// Old structure
+knockout: [
+  {
+    round: "roundOf32",
+    matches: [
+      { matchId: "m1", predictedWinnerCode: "BRA" },
+      { matchId: "m2", predictedWinnerCode: "FRA" }
+    ]
+  }
+]
+
+// New structure
+knockout: {
+  roundOf16: ["BRA", "FRA", "GER", ...],        // 16 teams
+  quarterfinals: ["BRA", "FRA", "GER", ...],    // 8 teams
+  semifinals: ["BRA", "FRA", "GER", ...],       // 4 teams
+  final: ["BRA", "FRA"],                        // 2 teams
+  champion: "BRA",                              // 1 team
+  bronze: {
+    finalist1: "GER",
+    finalist2: "NED",
+    winner: "NED"
+  }
+}
+```
+
+#### Solutions Collection
+
+Same structure as Bets (holds actual advancing teams).
+
+### Scoring Changes
+
+**Old:** 5 points per correct knockout match winner
+
+**New:** 1 point per correct team per round
+
+- Max 16 points (R16)
+- Max 8 points (QF)
+- Max 4 points (SF)
+- Max 2 points (Final)
+- Max 1 point (Champion)
+- Max 1 point (Bronze Winner)
+- **Total: 32 points max**
+
+### Implementation Timeline
+
+- **Sprint 3:** UI replaced with progression-based team selection
+- **Sprint 4:** API validation + scoring adapted
+- **Sprint 5:** Documentation updated
 
 ---
 

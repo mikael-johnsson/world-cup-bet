@@ -197,151 +197,189 @@ Each fixture also registers team names:
 
 ---
 
-## 3. Conditional Knockout Rendering
+## 3. Conditional Knockout Rendering (Progression-Based)
 
 ### Watching Group Stage Completion
 
 **File:** `src/components/BetForm.tsx`
 
 ```typescript
-// Watch all group stage data
-const groupStageData = watch("groupStage");
+// Watch group stage predictions
+const groupStageWatch = useWatch({
+  control: methods.control,
+  name: "predictions.groupStage",
+});
 
-// Check if all matches have predictions
-const isGroupStageComplete = (): boolean => {
-  if (!groupStageData) return false;
+// Check if ALL group stage matches have predictions
+const isGroupStageFilled =
+  groupStageWatch &&
+  groupStageWatch.every((group) =>
+    group.matches.every(
+      (match) => match.predictedHomeGoals >= 0 && match.predictedAwayGoals >= 0,
+    ),
+  );
 
-  const groupNames = [
-    "A",
-    "B",
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "H",
-    "I",
-    "J",
-    "K",
-    "L",
-  ];
-
-  for (const groupName of groupNames) {
-    const groupMatches = groupStageData[groupName];
-
-    if (!groupMatches || groupMatches.length !== 6) {
-      return false;
-    }
-
-    for (const match of groupMatches) {
-      // Check if both goals are numbers (not empty)
-      if (
-        match.predictedHomeGoals === "" ||
-        match.predictedAwayGoals === "" ||
-        match.predictedHomeGoals === null ||
-        match.predictedAwayGoals === null
-      ) {
-        return false;
-      }
-    }
-  }
-
-  return true;
-};
+// Calculate 32 advancing teams from predictions
+const advancingTeams = useMemo(() => {
+  if (!isGroupStageFilled || !groupStageWatch) return [];
+  return deriveAdvancingTeams(groupStageWatch, tournamentData.groups);
+}, [isGroupStageFilled, groupStageWatch, tournamentData.groups]);
 ```
+
+**Key logic:**
+
+- Validates all 72 group matches have predictions (>= 0 goals)
+- Calls `deriveAdvancingTeams()` helper which:
+  - Calculates standings for each group (goal difference, goals scored)
+  - Identifies top 2 teams from each group (24 teams)
+  - Identifies best 8 third-place teams (8 teams)
+  - Returns combined 32 advancing teams
 
 ### Conditional Rendering
 
 ```typescript
 return (
   <form onSubmit={handleSubmit(onSubmit)}>
-    <input {...register('userName')} placeholder="Your name" />
+    <GroupStageSection groups={tournamentData.groups} />
 
-    <GroupStageSection tournament={tournament} register={register} />
-
-    {/* Only show knockout when group stage is complete */}
-    {isGroupStageComplete() && (
-      <KnockoutSection tournament={tournament} register={register} />
+    {/* Knockout appears only when:
+        1. All group matches are filled, AND
+        2. 32 advancing teams were derived */}
+    {isGroupStageFilled && advancingTeams.length === 32 && (
+      <KnockoutSection
+        advancingTeams={advancingTeams}
+        allTeams={teamMap}
+      />
     )}
 
-    <button type="submit">Save Bet</button>
+    <button type="submit" disabled={isSubmitting || !isGroupStageFilled}>
+      Submit Bet
+    </button>
   </form>
 );
 ```
 
-**Why conditional?**
-
-- Prevents overwhelming users with 100+ inputs at once
-- Logical progression (group → knockout)
-- Enforces completing group stage first
-
-### Alternative: Tabs or Steps
-
-Could also use:
-
-- **Tabs:** "Group Stage" tab and "Knockout" tab
-- **Wizard:** Multi-step form with "Next" buttons
-- **Accordion:** Collapsible sections
-
-Current implementation is simplest for Phase 1.
-
 ---
 
-## 4. Knockout Section
+## 4. Knockout Section (Progression-Based)
 
-### Dynamic Round Rendering
+### Staged Progression Rendering
 
 **File:** `src/components/KnockoutSection.tsx`
 
+The knockout section renders in stages:
+
 ```typescript
-const knockoutRounds = [
-  { key: 'roundOf32', label: 'Round of 32', count: 16 },
-  { key: 'roundOf16', label: 'Round of 16', count: 8 },
-  { key: 'quarterFinals', label: 'Quarter Finals', count: 4 },
-  { key: 'semiFinals', label: 'Semi Finals', count: 2 },
-  { key: 'final', label: 'Final', count: 1 }
-];
+export default function KnockoutSection({
+  advancingTeams,
+  allTeams,
+}: KnockoutSectionProps) {
+  const { control } = useFormContext<BetInput>();
+  const knockoutPredictions = useWatch({
+    control,
+    name: "predictions.knockout",
+  });
 
-return (
-  <div>
-    {knockoutRounds.map(round => (
-      <div key={round.key}>
-        <h3>{round.label}</h3>
+  return (
+    <div>
+      {/* Stage 1: User selects 16 of 32 advancing teams */}
+      <RoundOf32Section
+        advancingTeams={advancingTeams}
+        allTeams={allTeams}
+        selectedTeams={knockoutPredictions?.roundOf16 || []}
+      />
 
-        {Array.from({ length: round.count }).map((_, index) => (
-          <div key={index}>
-            <label>Match {index + 1}:</label>
+      {/* Stage 2: Only show R16 if user selected exactly 16 teams */}
+      {knockoutPredictions?.roundOf16?.length === 16 && (
+        <ProgressionRound
+          roundName="Round of 16"
+          nextRoundFieldName="predictions.knockout.quarterfinals"
+          eligibleTeams={knockoutPredictions.roundOf16}
+          selectCount={8}
+          allTeams={allTeams}
+        />
+      )}
 
-            {/* Hidden field for match number */}
-            <input
-              type="hidden"
-              value={index + 1}
-              {...register(`knockout.${round.key}.${index}.match`)}
-            />
+      {/* Stage 3: Only show QF if user selected exactly 8 teams */}
+      {knockoutPredictions?.quarterfinals?.length === 8 && (
+        <ProgressionRound
+          roundName="Quarterfinals"
+          nextRoundFieldName="predictions.knockout.semifinals"
+          eligibleTeams={knockoutPredictions.quarterfinals}
+          selectCount={4}
+          allTeams={allTeams}
+        />
+      )}
 
-            {/* Winner prediction */}
-            <input
-              type="text"
-              placeholder="Team code (e.g., BRA)"
-              {...register(`knockout.${round.key}.${index}.predictedWinnerCode`)}
-              className="uppercase"
-            />
-          </div>
-        ))}
-      </div>
-    ))}
-  </div>
-);
+      {/* Stage 4: Only show SF if user selected exactly 4 teams */}
+      {knockoutPredictions?.semifinals?.length === 4 && (
+        <ProgressionRound
+          roundName="Semifinals"
+          nextRoundFieldName="predictions.knockout.final"
+          eligibleTeams={knockoutPredictions.semifinals}
+          selectCount={2}
+          allTeams={allTeams}
+        />
+      )}
+
+      {/* Stage 5: Final + Bronze (only show if 2 teams selected for SF) */}
+      {knockoutPredictions?.final?.length === 2 && (
+        <>
+          <FinalSection {...} />
+          <BronzeSection {...} />
+        </>
+      )}
+    </div>
+  );
+}
 ```
 
-### Field Naming Convention
+### Form Field Structure
 
-**Pattern:** `knockout.{roundName}.{matchIndex}.{fieldName}`
+**New progression-based structure:**
 
-**Examples:**
+```typescript
+// Old (match-based):
+knockout: {
+  roundOf32: [{ match: 1, predictedWinnerCode: "BRA" }, ...],
+  roundOf16: [{ match: 1, predictedWinnerCode: "FRA" }, ...],
+}
 
-- `knockout.roundOf32.0.predictedWinnerCode` → R32, 1st match, winner
-- `knockout.final.0.predictedWinnerCode` → Final, only match, winner
+// New (progression-based):
+knockout: {
+  roundOf16: ["BRA", "FRA", "GER", ...],        // 16 teams
+  quarterfinals: ["BRA", "FRA", "GER", ...],    // 8 teams
+  semifinals: ["BRA", "FRA", "GER", ...],       // 4 teams
+  final: ["BRA", "FRA"],                        // 2 teams
+  champion: "BRA",                              // 1 team
+  bronze: {
+    finalist1: "GER",
+    finalist2: "NED",
+    winner: "NED"
+  }
+}
+```
+
+### Team Eligibility Logic
+
+Each round shows **only teams from the previous round**:
+
+```typescript
+// R16 section shows all 32 advancing teams
+// User selects 16, stores in roundOf16
+
+// QF section shows the 16 selected in R16
+// User selects 8, stores in quarterfinals
+
+// SF section shows the 8 selected in QF
+// User selects 4, stores in semifinals
+
+// Final section shows the 4 selected in SF
+// User selects 2, stores in final
+
+// Champion: shows 2 finalists, user picks 1
+// Bronze: shows 2 SF losers, user picks winner
+```
 
 ---
 

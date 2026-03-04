@@ -11,25 +11,28 @@ export const groupStagePredictionSchema = z.object({
   ),
 });
 
-export const knockoutPredictionSchema = z.object({
-  round: z.enum([
-    "roundOf32",
-    "roundOf16",
-    "quarterfinals",
-    "semifinals",
-    "final",
-  ]),
-  matches: z.array(
-    z.object({
-      matchId: z.string(),
-      predictedWinnerCode: z.string(),
-    }),
-  ),
+export const knockoutProgressionSchema = z.object({
+  roundOf16: z
+    .array(z.string())
+    .length(16, "Must select exactly 16 teams for Round of 16"),
+  quarterfinals: z
+    .array(z.string())
+    .length(8, "Must select exactly 8 teams for Quarterfinals"),
+  semifinals: z
+    .array(z.string())
+    .length(4, "Must select exactly 4 teams for Semifinals"),
+  final: z.array(z.string()).length(2, "Must select exactly 2 teams for Final"),
+  champion: z.string().min(2, "Champion team code is required"),
+  bronze: z.object({
+    finalist1: z.string().min(2, "First bronze finalist team code required"),
+    finalist2: z.string().min(2, "Second bronze finalist team code required"),
+    winner: z.string().min(2, "Bronze medal winner team code required"),
+  }),
 });
 
 export const betPredictionsSchema = z.object({
   groupStage: z.array(groupStagePredictionSchema),
-  knockout: z.array(knockoutPredictionSchema),
+  knockout: knockoutProgressionSchema,
 });
 
 export const betSchema = z.object({

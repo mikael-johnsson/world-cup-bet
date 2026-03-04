@@ -37,24 +37,10 @@ export async function calculateBetScore(
   });
 
   // Calculate knockout score
-  bet.predictions.knockout.forEach((roundPrediction) => {
-    const solutionRoundPrediction = solution.predictions.knockout.find(
-      (r) => r.round === roundPrediction.round,
-    );
-
-    if (solutionRoundPrediction) {
-      // Convert solution matches to scoring format
-      const solutionMatches = solutionRoundPrediction.matches.map((m) => ({
-        matchId: m.matchId,
-        winner: m.predictedWinnerCode,
-      }));
-
-      knockoutScore += calculateKnockoutScore(
-        roundPrediction.matches,
-        solutionMatches,
-      );
-    }
-  });
+  knockoutScore = calculateKnockoutScore(
+    bet.predictions.knockout,
+    solution.predictions.knockout,
+  );
 
   const totalScore = groupStageScore + knockoutScore;
 

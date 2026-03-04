@@ -211,7 +211,9 @@ function MatchInput({ groupIdx, fixtureIdx, fixture }: MatchInputProps) {
         <p className="text-sm font-semibold">
           {fixture.homeTeam.name} vs {fixture.awayTeam.name}
         </p>
-        <p className="text-xs text-gray-500">{fixture.matchDate}</p>
+        <p className="text-xs text-gray-500">
+          {new Date(fixture.matchDate).toLocaleString()}
+        </p>
       </div>
 
       <div className="flex items-center gap-2">

@@ -271,84 +271,90 @@ export default function GroupStageSection({
 
 **Type:** Client Component (used inside BetForm)
 
-**Purpose:** Renders 5 knockout rounds with winner predictions.
+**Purpose:** Render progression-based knockout predictions where users select advancing teams per round.
 
 ### Props
 
 ```typescript
 interface KnockoutSectionProps {
-  tournament: ITournament;
-  register: UseFormRegister<any>;
+  advancingTeams: string[]; // 32 teams that advanced from group stage
+  allTeams: Map<string, string>; // team code → team name mapping
 }
 ```
+
+### How It Works
+
+The knockout section is **staged**:
+
+1. **Round of 32** — Show all 32 advancing teams; user selects 16 for R16
+2. **Round of 16** — Show selected 16 teams; user picks 8 for QF
+3. **Quarterfinals** — Show 8 teams; user picks 4 for SF
+4. **Semifinals** — Show 4 teams; user picks 2 for Final
+5. **Final** — Show 2 finalists; user picks champion
+6. **Bronze** — Show semifinal losers; user picks bronze winner
+
+Each round only appears when the previous round is complete.
 
 ### Code Structure
 
 ```typescript
 export default function KnockoutSection({
-  tournament,
-  register
+  advancingTeams,
+  allTeams
 }: KnockoutSectionProps) {
-  const knockoutRounds = [
-    { key: 'roundOf32', label: 'Round of 32', count: 16 },
-    { key: 'roundOf16', label: 'Round of 16', count: 8 },
-    { key: 'quarterFinals', label: 'Quarter Finals', count: 4 },
-    { key: 'semiFinals', label: 'Semi Finals', count: 2 },
-    { key: 'final', label: 'Final', count: 1 }
-  ];
+  const { control } = useFormContext<BetInput>();
+  const knockoutPredictions = useWatch({
+    control,
+    name: "predictions.knockout",
+  });
 
   return (
-    <div className="border-t pt-6 mt-6">
+    <div className="space-y-8">
       <h2>Knockout Stage Predictions</h2>
-      <p className="text-sm text-gray-600 mb-4">
-        Predict which team will win each knockout match
-      </p>
 
-      {knockoutRounds.map(round => (
-        <div key={round.key} className="mb-6">
-          <h3>{round.label}</h3>
+      {/* Round of 32 - Starting point */}
+      <RoundOf32Section
+        advancingTeams={advancingTeams}
+        allTeams={allTeams}
+        selectedTeams={knockoutPredictions?.roundOf16 || []}
+      />
 
-          <div className="space-y-2">
-            {Array.from({ length: round.count }).map((_, index) => (
-              <div key={index} className="flex items-center gap-4">
-                <label>Match {index + 1}:</label>
+      {/* Round of 16 - if 16 selected */}
+      {knockoutPredictions?.roundOf16?.length === 16 && (
+        <ProgressionRound
+          roundName="Round of 16"
+          nextRoundFieldName="predictions.knockout.quarterfinals"
+          eligibleTeams={knockoutPredictions.roundOf16}
+          selectCount={8}
+          allTeams={allTeams}
+        />
+      )}
 
-                <input
-                  type="text"
-                  placeholder="Team code (e.g., BRA)"
-                  {...register(
-                    `knockout.${round.key}.${index}.predictedWinnerCode`
-                  )}
-                  className="border p-2 uppercase"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
+      {/* Similar for QF, SF, Final, Bronze ... */}
     </div>
   );
 }
 ```
 
-### Features
+### Key Features
 
-1. **Structured Rounds**
-   - Array defines each round's metadata
-   - Easy to add/remove rounds
+1. **Staged Progression**
+   - Each round conditionally renders based on previous completion
+   - Checkboxes for team selection
+   - Visual feedback on progress (e.g., "Selected: 16/16")
 
-2. **Dynamic Match Count**
-   - Round of 32: 16 inputs
-   - Round of 16: 8 inputs
-   - Quarter Finals: 4 inputs
-   - Semi Finals: 2 inputs
-   - Final: 1 input
+2. **Team Eligibility**
+   - Only teams that advanced from previous round are shown
+   - Makes predictions consistent and realistic
 
-3. **Text Inputs**
-   - Users enter team codes (e.g., "BRA", "ARG")
-   - `uppercase` CSS class for consistency
+3. **Team Display**
+   - Uses `allTeams` Map to show team names alongside codes
+   - Reads from left-hand prop passed from BetForm
 
-4. **Hidden Field**
+4. **Bronze Medal Flow**
+   - Automatically shows the two semifinal losers
+   - User picks the bronze medal winner
+   - Simple radio button selection4. **Hidden Field**
    - Each input also registers `match` number:
    ```typescript
    <input type="hidden" value={index + 1}

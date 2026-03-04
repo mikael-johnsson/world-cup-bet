@@ -144,26 +144,38 @@ Stores a user's predictions for all matches and knockout winners.
 
 ```typescript
 interface IBet {
-  userName: string;
+  userId: string; // Phase 2: User who made this bet
   tournamentId: ObjectId;
-  groupStage: {
-    [key: string]: {
-      homeTeam: string;
-      awayTeam: string;
-      predictedHomeGoals: number;
-      predictedAwayGoals: number;
+  predictions: {
+    groupStage: {
+      groupName: string;
+      matches: {
+        matchId: string;
+        predictedHomeGoals: number;
+        predictedAwayGoals: number;
+      }[];
     }[];
+    knockout: {
+      roundOf16: string[]; // 16 team codes
+      quarterfinals: string[]; // 8 team codes
+      semifinals: string[]; // 4 team codes
+      final: string[]; // 2 team codes
+      champion: string; // Winner team code
+      bronze: {
+        finalist1: string; // Semifinal loser 1
+        finalist2: string; // Semifinal loser 2
+        winner: string; // Bronze medal winner
+      };
+    };
   };
-  knockout: {
-    roundOf32: { match: number; predictedWinnerCode: string }[];
-    roundOf16: { match: number; predictedWinnerCode: string }[];
-    quarterFinals: { match: number; predictedWinnerCode: string }[];
-    semiFinals: { match: number; predictedWinnerCode: string }[];
-    final: { match: number; predictedWinnerCode: string }[];
+  scoring: {
+    groupStageScore: number;
+    knockoutScore: number;
+    totalScore: number;
+    lastCalculated?: Date;
   };
-  score?: number;
+  submittedAt: Date;
   createdAt: Date;
-  updatedAt: Date;
 }
 ```
 
@@ -172,83 +184,103 @@ interface IBet {
 ```typescript
 const BetSchema = new Schema<IBet>(
   {
-    userName: { type: String, required: true },
+    userId: String, // Phase 2: will be required + indexed
     tournamentId: {
       type: Schema.Types.ObjectId,
       ref: "Tournament",
       required: true,
     },
-    groupStage: {
-      type: Map,
-      of: [
+    predictions: {
+      groupStage: [
         {
-          homeTeam: String,
-          awayTeam: String,
-          predictedHomeGoals: Number,
-          predictedAwayGoals: Number,
+          groupName: { type: String, required: true },
+          matches: [
+            {
+              matchId: { type: String, required: true },
+              predictedHomeGoals: { type: Number, required: true },
+              predictedAwayGoals: { type: Number, required: true },
+            },
+          ],
         },
       ],
+      knockout: {
+        roundOf16: { type: [String], required: true },
+        quarterfinals: { type: [String], required: true },
+        semifinals: { type: [String], required: true },
+        final: { type: [String], required: true },
+        champion: { type: String, required: true },
+        bronze: {
+          finalist1: { type: String, required: true },
+          finalist2: { type: String, required: true },
+          winner: { type: String, required: true },
+        },
+      },
     },
-    knockout: {
-      roundOf32: [{ match: Number, predictedWinnerCode: String }],
-      roundOf16: [{ match: Number, predictedWinnerCode: String }],
-      quarterFinals: [{ match: Number, predictedWinnerCode: String }],
-      semiFinals: [{ match: Number, predictedWinnerCode: String }],
-      final: [{ match: Number, predictedWinnerCode: String }],
+    scoring: {
+      groupStageScore: { type: Number, default: 0 },
+      knockoutScore: { type: Number, default: 0 },
+      totalScore: { type: Number, default: 0 },
+      lastCalculated: Date,
     },
-    score: { type: Number, default: 0 },
+    submittedAt: Date,
   },
   { timestamps: true },
 );
+
+// Unique index on (userId, tournamentId) — one bet per user per tournament
+BetSchema.index({ userId: 1, tournamentId: 1 }, { unique: true, sparse: true });
 ```
+
+{ timestamps: true },
+);
+
+````
 
 ### Example Document
 
 ```json
 {
   "_id": "670f5678901234abcdef5678",
-  "userName": "Micke",
+  "userId": "507f1f77bcf86cd799439011",
   "tournamentId": "670f1234567890abcdef1234",
-  "groupStage": {
-    "A": [
+  "predictions": {
+    "groupStage": [
       {
-        "homeTeam": "MEX",
-        "awayTeam": "USA",
-        "predictedHomeGoals": 2,
-        "predictedAwayGoals": 1
+        "groupName": "A",
+        "matches": [
+          {
+            "matchId": "match_1",
+            "predictedHomeGoals": 2,
+            "predictedAwayGoals": 1
+          },
+          // ... 5 more matches in group A
+        ]
       },
-      // ... 5 more matches in group A
+      // ... groups B-L
     ],
-    "B": [...],
-    // ... groups C-L
+    "knockout": {
+      "roundOf16": ["BRA", "FRA", "GER", "NED", "ENG", "ARG", "ESP", "URY", "BEL", "SWE", "ITA", "POR", "JPN", "AUS", "MEX", "KOR"],
+      "quarterfinals": ["BRA", "FRA", "GER", "NED", "ENG", "ARG", "ESP", "URY"],
+      "semifinals": ["BRA", "FRA", "GER", "NED"],
+      "final": ["BRA", "FRA"],
+      "champion": "BRA",
+      "bronze": {
+        "finalist1": "GER",
+        "finalist2": "NED",
+        "winner": "NED"
+      }
+    }
   },
-  "knockout": {
-    "roundOf32": [
-      { "match": 1, "predictedWinnerCode": "BRA" },
-      { "match": 2, "predictedWinnerCode": "ARG" },
-      // ... 14 more
-    ],
-    "roundOf16": [
-      { "match": 1, "predictedWinnerCode": "GER" },
-      // ... 7 more
-    ],
-    "quarterFinals": [
-      { "match": 1, "predictedWinnerCode": "FRA" },
-      // ... 3 more
-    ],
-    "semiFinals": [
-      { "match": 1, "predictedWinnerCode": "ESP" },
-      { "match": 2, "predictedWinnerCode": "ENG" }
-    ],
-    "final": [
-      { "match": 1, "predictedWinnerCode": "ESP" }
-    ]
+  "scoring": {
+    "groupStageScore": 42,
+    "knockoutScore": 18,
+    "totalScore": 60,
+    "lastCalculated": "2026-03-04T10:30:00.000Z"
   },
-  "score": 42,
-  "createdAt": "2024-10-16T10:00:00.000Z",
-  "updatedAt": "2024-10-16T14:30:00.000Z"
+  "createdAt": "2026-01-15T10:00:00.000Z",
+  "submittedAt": "2026-01-15T14:30:00.000Z"
 }
-```
+````
 
 ### Unique Constraint
 
@@ -275,32 +307,40 @@ Admin sets the actual tournament results (ground truth for scoring).
 ```typescript
 interface ISolution {
   tournamentId: ObjectId;
-  groupStage: {
-    [key: string]: {
-      homeTeam: string;
-      awayTeam: string;
-      homeGoals: number;
-      awayGoals: number;
+  predictions: {
+    groupStage: {
+      groupName: string;
+      matches: {
+        matchId: string;
+        predictedHomeGoals: number;
+        predictedAwayGoals: number;
+      }[];
     }[];
+    knockout: {
+      roundOf16: string[]; // 16 actual advancing teams
+      quarterfinals: string[]; // 8 actual advancing teams
+      semifinals: string[]; // 4 actual advancing teams
+      final: string[]; // 2 actual finalists
+      champion: string; // Actual winner
+      bronze: {
+        finalist1: string; // Actual SF loser 1
+        finalist2: string; // Actual SF loser 2
+        winner: string; // Actual bronze winner
+      };
+    };
   };
-  knockout: {
-    roundOf32: { match: number; winner: string }[];
-    roundOf16: { match: number; winner: string }[];
-    quarterFinals: { match: number; winner: string }[];
-    semiFinals: { match: number; winner: string }[];
-    final: { match: number; winner: string }[];
-  };
+  createdAt: Date;
 }
 ```
 
 ### Differences from Bet Model
 
-| Field             | Bet Model             | Solution Model |
-| ----------------- | --------------------- | -------------- |
-| Group stage goals | `predictedHomeGoals`  | `homeGoals`    |
-| Group stage goals | `predictedAwayGoals`  | `awayGoals`    |
-| Knockout winner   | `predictedWinnerCode` | `winner`       |
-| User identifier   | `userName` required   | No user field  |
+| Aspect             | Bet Model            | Solution Model                         |
+| ------------------ | -------------------- | -------------------------------------- |
+| User identifier    | `userId` required    | No user field                          |
+| Group goals        | `predictedHomeGoals` | Predicted (will be actual after match) |
+| Knockout roundOf16 | `roundOf16` array    | Same structure (actual teams)          |
+| Purpose            | User's predictions   | Ground truth for scoring               |
 
 ### Example Document
 
@@ -308,32 +348,75 @@ interface ISolution {
 {
   "_id": "670f9012345678abcdef9012",
   "tournamentId": "670f1234567890abcdef1234",
-  "groupStage": {
-    "A": [
+  "predictions": {
+    "groupStage": [
       {
-        "homeTeam": "MEX",
-        "awayTeam": "USA",
-        "homeGoals": 1,
-        "awayGoals": 1
-      },
-      // ... all matches
-    ]
+        "groupName": "A",
+        "matches": [
+          {
+            "matchId": "match_1",
+            "predictedHomeGoals": 1,
+            "predictedAwayGoals": 1
+          }
+          // ... 5 more matches
+        ]
+      }
+      // ... groups B-L
+    ],
+    "knockout": {
+      "roundOf16": [
+        "BRA",
+        "FRA",
+        "GER",
+        "NED",
+        "ENG",
+        "ARG",
+        "ESP",
+        "URY",
+        "BEL",
+        "CRO",
+        "ITA",
+        "POR",
+        "JPN",
+        "AUS",
+        "MEX",
+        "KOR"
+      ],
+      "quarterfinals": ["BRA", "FRA", "GER", "NED", "ENG", "ARG", "ESP", "CRO"],
+      "semifinals": ["BRA", "FRA", "GER", "NED"],
+      "final": ["BRA", "FRA"],
+      "champion": "FRA",
+      "bronze": {
+        "finalist1": "GER",
+        "finalist2": "NED",
+        "winner": "NED"
+      }
+    }
   },
-  "knockout": {
-    "roundOf32": [
-      { "match": 1, "winner": "BRA" },
-      // ... 15 more
-    ],
-    "roundOf16": [
-      { "match": 1, "winner": "ARG" },
-      // ... 7 more
-    ],
-    "quarterFinals": [...],
-    "semiFinals": [...],
-    "final": [{ "match": 1, "winner": "ESP" }]
-  }
+  "createdAt": "2026-03-04T10:00:00.000Z"
 }
 ```
+
+      // ... all matches
+    ]
+
+},
+"knockout": {
+"roundOf32": [
+{ "match": 1, "winner": "BRA" },
+// ... 15 more
+],
+"roundOf16": [
+{ "match": 1, "winner": "ARG" },
+// ... 7 more
+],
+"quarterFinals": [...],
+"semiFinals": [...],
+"final": [{ "match": 1, "winner": "ESP" }]
+}
+}
+
+````
 
 ---
 
@@ -355,7 +438,7 @@ interface IUser {
   role: "user" | "admin";
   createdAt: Date;
 }
-```
+````
 
 **Status:** Not implemented in Phase 1. Will be added with JWT authentication.
 

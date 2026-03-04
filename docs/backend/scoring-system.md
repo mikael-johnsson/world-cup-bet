@@ -51,14 +51,39 @@ Each match can earn **3-4 points:**
 
 ### Knockout Stage
 
-Each match can earn **5 points:**
+Each correct team prediction earns **1 point** per round:
 
-| Outcome            | Points   | Description             |
-| ------------------ | -------- | ----------------------- |
-| **Correct winner** | 5 points | Predicted team advances |
-| **Wrong winner**   | 0 points | No points               |
+| Round              | Teams | Points Each | Max Points    |
+| ------------------ | ----- | ----------- | ------------- |
+| Round of 16        | 16    | 1 point     | 16 points     |
+| Quarterfinals      | 8     | 1 point     | 8 points      |
+| Semifinals         | 4     | 1 point     | 4 points      |
+| Final              | 2     | 1 point     | 2 points      |
+| Champion           | 1     | 1 point     | 1 point       |
+| Bronze Winner      | 1     | 1 point     | 1 point       |
+| **Total Knockout** | —     | —           | **32 points** |
 
-**Note:** Knockout scoring ignores score predictions (not implemented in Phase 1).
+#### Examples
+
+**User Prediction vs. Actual Result:**
+
+```
+User predicts:
+- Round of 16: ["BRA", "FRA", "GER", "NED", "ENG", "ARG", "ESP", "URY", "BEL", "SWE", "ITA", "POR", "JPN", "AUS", "MEX", "KOR"]
+- Champion: BRA
+- Bronze Winner: NED
+
+Actual Result:
+- Round of 16: ["BRA", "FRA", "GER", "NED", "ENG", "ARG", "ESP", "URY", "BEL", "CRO", "ITA", "POR", "JPN", "AUS", "MEX", "KOR"]
+- Champion: FRA
+- Bronze Winner: NED
+
+Scoring:
+- R16: 15 correct (CRO was actual, user predicted SWE) = 15 points
+- Champion: FRA was actual, user predicted BRA = 0 points
+- Bronze: NED was correct = 1 point
+- Total: 16 points
+```
 
 ---
 
@@ -114,9 +139,8 @@ export function calculateScore(bet: IBet, solution: ISolution): number {
 1. Loop through all 12 groups
 2. For each group, loop through all 6 matches
 3. Call `groupStageScoringRules()` for each match
-4. Loop through all 5 knockout rounds
-5. Call `knockoutScoringRules()` for each match
-6. Return total score
+4. Call `calculateKnockoutScore()` with entire knockout progression object
+5. Return total score
 
 ---
 
@@ -185,26 +209,66 @@ function determineMatchResult(
 
 ---
 
-### 3. Knockout Scoring
+### 3. Knockout Scoring (Progression-Based)
 
 **File:** `src/lib/scoring/knockoutScoringRules.ts`
 
 ```typescript
-export function knockoutScoringRules(
-  userPrediction: { match: number; predictedWinnerCode: string },
-  actualResult: { match: number; winner: string },
+export function calculateKnockoutScore(
+  prediction: KnockoutProgression,
+  solution: KnockoutProgression,
 ): number {
-  if (userPrediction.predictedWinnerCode === actualResult.winner) {
-    return 5;
+  let score = 0;
+
+  // Score Round of 16 (16 teams selected correctly)
+  prediction.roundOf16.forEach((team) => {
+    if (solution.roundOf16.includes(team)) {
+      score += 1;
+    }
+  });
+
+  // Score Quarterfinals (8 teams)
+  prediction.quarterfinals.forEach((team) => {
+    if (solution.quarterfinals.includes(team)) {
+      score += 1;
+    }
+  });
+
+  // Score Semifinals (4 teams)
+  prediction.semifinals.forEach((team) => {
+    if (solution.semifinals.includes(team)) {
+      score += 1;
+    }
+  });
+
+  // Score Final (2 teams)
+  prediction.final.forEach((team) => {
+    if (solution.final.includes(team)) {
+      score += 1;
+    }
+  });
+
+  // Score Champion (1 point)
+  if (prediction.champion === solution.champion) {
+    score += 1;
   }
-  return 0;
+
+  // Score Bronze Medal (1 point for correct winner)
+  if (prediction.bronze.winner === solution.bronze.winner) {
+    score += 1;
+  }
+
+  return score;
 }
 ```
 
-**Simple logic:**
+**Logic:**
 
-- Correct winner = 5 points
-- Wrong winner = 0 points
+- For each round (R16, QF, SF, Final), check each predicted team against actual advancing teams
+- Award 1 point for each correct team
+- Award 1 point for correct champion prediction
+- Award 1 point for correct bronze medal winner
+- Maximum knockout score: 32 points (16+8+4+2+1+1)
 
 ---
 
@@ -257,16 +321,17 @@ function getMatchResult(
 
 ### Knockout Stage
 
-- Round of 32: 16 matches × 5 points = 80
-- Round of 16: 8 matches × 5 points = 40
-- Quarter Finals: 4 matches × 5 points = 20
-- Semi Finals: 2 matches × 5 points = 10
-- Final: 1 match × 5 points = 5
-- **Max knockout score = 155 points**
+- Round of 16: max 16 points
+- Quarterfinals: max 8 points
+- Semifinals: max 4 points
+- Final: max 2 points
+- Champion: max 1 point
+- Bronze Winner: max 1 point
+- **Max knockout score = 32 points**
 
 ### Total Maximum
 
-**288 + 155 = 443 points**
+**288 + 32 = 320 points**
 
 ---
 
