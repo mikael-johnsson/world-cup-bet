@@ -53,20 +53,6 @@ Phase 2 adds authentication and role-based access control:
 }
 ```
 
-**cURL Example**
-
-```bash
-curl -X POST http://localhost:3000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "micke_bets",
-    "email": "micke@example.com",
-    "firstName": "Michael",
-    "lastName": "Anderson",
-    "password": "securePassword123"
-  }'
-```
-
 **Code Location**
 
 `src/app/api/auth/register/route.ts`
@@ -102,18 +88,6 @@ curl -X POST http://localhost:3000/api/auth/register \
 - Password hash is verified but not returned
 - User object does not expose password or sensitive fields
 
-**cURL Example**
-
-```bash
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -c cookies.txt \
-  -d '{
-    "username": "micke_bets",
-    "password": "securePassword123"
-  }'
-```
-
 **Code Location**
 
 `src/app/api/auth/login/route.ts`
@@ -131,13 +105,6 @@ curl -X POST http://localhost:3000/api/auth/login \
   "success": true,
   "message": "Logged out successfully"
 }
-```
-
-**cURL Example**
-
-```bash
-curl -X POST http://localhost:3000/api/auth/logout \
-  -b cookies.txt
 ```
 
 **Code Location**
@@ -166,13 +133,6 @@ curl -X POST http://localhost:3000/api/auth/logout \
 {
   "error": "Not authenticated"
 }
-```
-
-**cURL Example**
-
-```bash
-curl http://localhost:3000/api/auth/me \
-  -b cookies.txt
 ```
 
 **Code Location**
@@ -283,23 +243,11 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 }
 ```
 
-**Key Behavior Changes (Phase 2)**
+**Key Behavior Changes**
 
 - Bets are now tied to the authenticated user's `userId`
 - Unique constraint: one bet per user per tournament (enforced at DB level)
 - Updating an existing bet: Finds by `{userId, tournamentId}` and updates predictions
-
-**cURL Example**
-
-```bash
-curl -X POST http://localhost:3000/api/bets \
-  -H "Content-Type: application/json" \
-  -b cookies.txt \
-  -d '{
-    "tournamentId": "670f1234567890abcdef1234",
-    "predictions": { ... }
-  }'
-```
 
 **Code Location**
 
@@ -356,13 +304,6 @@ curl -X POST http://localhost:3000/api/bets \
 
 - Gets only the authenticated user's bet (filters by `userId`)
 - Requires `tournamentId` query parameter
-
-**cURL Example**
-
-```bash
-curl "http://localhost:3000/api/bets?tournamentId=670f1234567890abcdef1234" \
-  -b cookies.txt
-```
 
 **Code Location**
 
@@ -439,18 +380,6 @@ curl "http://localhost:3000/api/bets?tournamentId=670f1234567890abcdef1234" \
 }
 ```
 
-**cURL Example**
-
-```bash
-curl -X POST http://localhost:3000/api/admin/solution \
-  -H "Content-Type: application/json" \
-  -b cookies.txt \
-  -d '{
-    "tournamentId": "670f1234567890abcdef1234",
-    "predictions": { ... }
-  }'
-```
-
 **Code Location**
 
 `src/app/api/admin/solution/route.ts`
@@ -505,15 +434,6 @@ curl -X POST http://localhost:3000/api/admin/solution \
 {
   "error": "Solution not found. Please set the solution first."
 }
-```
-
-**cURL Example**
-
-```bash
-curl -X POST http://localhost:3000/api/admin/score-all \
-  -H "Content-Type: application/json" \
-  -b cookies.txt \
-  -d '{ "tournamentId": "670f1234567890abcdef1234" }'
 ```
 
 **Code Location**
@@ -640,7 +560,7 @@ All routes call `await connectDB()` from `src/lib/db.ts`:
 
 ---
 
-## Testing Workflow (Phase 2)
+## Testing Workflow
 
 1. **Start server:** `npm run dev`
 2. **Register user:** `POST /api/auth/register` (creates user account)

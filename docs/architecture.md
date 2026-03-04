@@ -132,38 +132,6 @@ src/
 
 ---
 
-## Environment Variables
-
-```env
-# .env.local
-MONGODB_URI=mongodb://localhost:27017/world-cup-bet
-```
-
-NextJS automatically loads `.env.local` — accessible via `process.env.MONGODB_URI`.
-
----
-
-## Development Workflow
-
-1. **Start MongoDB:**
-
-   ```bash
-   brew services start mongodb-community
-   ```
-
-2. **Start dev server:**
-
-   ```bash
-   npm run dev
-   ```
-
-3. **Visit:** `http://localhost:3000`
-   - Tournament auto-seeds on first load
-   - Form renders with all matches
-   - Submit creates bet in MongoDB
-
----
-
 ## Key NextJS Features Used
 
 | Feature               | Location                 | Purpose                       |
@@ -173,25 +141,6 @@ NextJS automatically loads `.env.local` — accessible via `process.env.MONGODB_
 | **Server Components** | `page.tsx`               | Default server-side rendering |
 | **Client Components** | `"use client"`           | Interactive forms with hooks  |
 | **TypeScript**        | All files                | Type safety across stack      |
-
----
-
-## Phase 1 vs. Phase 2
-
-### Current (Phase 1)
-
-- ✅ Tournament seeding
-- ✅ Bet submission (no user accounts)
-- ✅ Admin solution setting
-- ✅ Scoring system
-
-### Coming (Phase 2)
-
-- 🔜 User registration/login
-- 🔜 Protected routes with JWT
-- 🔜 Link bets to user accounts
-- 🔜 Admin dashboard UI
-- 🔜 Leaderboard
 
 ---
 

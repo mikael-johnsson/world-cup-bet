@@ -47,107 +47,171 @@ BetForm.tsx (Client Component)
 
 **Type:** Client Component (`"use client"`)
 
-**Purpose:** Main form container that orchestrates the entire betting experience.
+**Purpose:** Main form container that orchestrates the entire betting experience with group stage and progression-based knockout predictions.
 
 ### Props
 
 ```typescript
 interface BetFormProps {
-  tournament: ITournament;
+  tournamentId: string;
+  tournamentData: any; // Full tournament document with groups and teams
 }
 ```
 
-Receives the seeded tournament structure from `page.tsx`.
+Receives the tournament structure from `page.tsx`.
 
 ### Key Features
 
 1. **React Hook Form Integration**
-   - Manages 100+ form inputs efficiently
+   - Manages 72 group stage inputs + knockout predictions
    - Provides validation and error handling
-   - Tracks form state (dirty, touched, etc.)
+   - Tracks form state (dirty, touched, valid)
 
-2. **Conditional Rendering**
-   - Knockout section only appears after group stage is filled
-   - Uses `watch()` to observe group stage completion
+2. **Group Stage Completion Detection**
+   - Watches `predictions.groupStage` for all predictions filled (>= 0 goals)
+   - Uses `every()` to validate all 72 matches are complete
 
-3. **Form Submission**
-   - Sends POST request to `/api/bets`
-   - Handles success/error states
-   - Displays confirmation messages
+3. **Automatic Advancing Teams Calculation**
+   - Calls `deriveAdvancingTeams()` to calculate 32 advancing teams:
+     - Top 2 from each of 12 groups = 24 teams
+     - Best 8 third-place teams = 8 teams
+   - Teams ranked by goal difference, then goals scored
+
+4. **Knockout Section Conditional Rendering**
+   - Only appears when group stage is 100% filled
+   - Only appears when exactly 32 advancing teams are calculated
+   - Passes advancing teams to KnockoutSection component
+
+5. **Authentication Check**
+   - Requires user login via GET `/api/auth/me`
+   - Shows login/register prompt if not authenticated
+
+6. **Form Submission**
+   - Sends POST to `/api/bets` with full predictions
+   - Updates existing bet or creates new one (per user + tournament)
+   - Shows success/error messages
 
 ### Code Structure
 
 ```typescript
 'use client';
 
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { betValidationSchema } from '@/lib/validationSchemas';
+import { betSchema, BetInput } from '@/lib/validationSchemas';
+import { deriveAdvancingTeams } from '@/lib/deriveAdvancingTeams';
 
-export default function BetForm({ tournament }: BetFormProps) {
-  // 1. Initialize form
-  const { register, handleSubmit, watch, formState } = useForm({
-    resolver: zodResolver(betValidationSchema),
+export default function BetForm({ tournamentId, tournamentData }: BetFormProps) {
+  // 1. Check auth status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const response = await fetch('/api/auth/me');
+      setAuthUser(response.ok ? await response.json() : null);
+    };
+    checkAuth();
+  }, []);
+
+  // 2. Initialize form with progression-based knockout structure
+  const methods = useForm<BetInput>({
+    resolver: zodResolver(betSchema),
     defaultValues: {
-      userName: '',
-      tournamentId: tournament._id,
-      groupStage: {},
-      knockout: {
-        roundOf32: [],
-        roundOf16: [],
-        quarterFinals: [],
-        semiFinals: [],
-        final: []
-      }
-    }
+      tournamentId,
+      predictions: {
+        groupStage: tournamentData.groups.map(group => ({
+          groupName: group.name,
+          matches: group.fixtures.map(fixture => ({
+            matchId: fixture.matchId,
+            predictedHomeGoals: 0,
+            predictedAwayGoals: 0,
+          })),
+        })),
+        knockout: {
+          roundOf16: [],           // 16 advancing teams
+          quarterfinals: [],       // 8 advancing teams
+          semifinals: [],          // 4 advancing teams
+          final: [],               // 2 finalists
+          champion: "",            // 1 champion
+          bronze: {
+            finalist1: "",         // SF loser 1
+            finalist2: "",         // SF loser 2
+            winner: "",            // Bronze winner
+          },
+        },
+      },
+    },
   });
 
-  // 2. Watch group stage to conditionally render knockout
-  const groupStageData = watch('groupStage');
+  // 3. Watch group stage and detect completion
+  const groupStageWatch = useWatch({
+    control: methods.control,
+    name: 'predictions.groupStage',
+  });
 
-  // 3. Check if all group matches are predicted
-  const isGroupStageComplete = () => {
-    // Logic to verify all 72 matches have predictions
-  };
+  const isGroupStageFilled = groupStageWatch?.every(group =>
+    group.matches.every(m => m.predictedHomeGoals >= 0 && m.predictedAwayGoals >= 0),
+  );
 
-  // 4. Handle form submission
-  const onSubmit = async (data: any) => {
+  // 4. Calculate advancing teams (top 2 from each group + best 8 third-place)
+  const advancingTeams = useMemo(() => {
+    if (!isGroupStageFilled) return [];
+    return deriveAdvancingTeams(groupStageWatch, tournamentData.groups);
+  }, [isGroupStageFilled, groupStageWatch, tournamentData.groups]);
+
+  // 5. Create team name lookup map
+  const teamMap = useMemo(() => {
+    const map = new Map<string, string>();
+    tournamentData.groups.forEach(group =>
+      group.teams.forEach(team =>
+        map.set(team.code, team.name || team.code),
+      ),
+    );
+    return map;
+  }, [tournamentData.groups]);
+
+  // 6. Handle submission
+  const onSubmit = async (data: BetInput) => {
     const response = await fetch('/api/bets', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
     // Handle response...
   };
 
-  // 5. Render form sections
+  // 7. Render form sections
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      <input {...register('userName')} />
+    <FormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(onSubmit)}>
+        <h1>World Cup Bet Form</h1>
 
-      <GroupStageSection
-        tournament={tournament}
-        register={register}
-      />
+        <GroupStageSection groups={tournamentData.groups} />
 
-      {isGroupStageComplete() && (
-        <KnockoutSection
-          tournament={tournament}
-          register={register}
-        />
-      )}
+        {/* Knockout appears only when group stage is complete */}
+        {isGroupStageFilled && advancingTeams.length === 32 && (
+          <KnockoutSection advancingTeams={advancingTeams} allTeams={teamMap} />
+        )}
 
-      <button type="submit">Save Bet</button>
-    </form>
+        <button type="submit" disabled={!isGroupStageFilled}>Save Bet</button>
+      </form>
+    </FormProvider>
   );
 }
 ```
 
 ### State Management
 
-**No useState needed** — React Hook Form manages all state internally:
+**React Hook Form manages:**
 
-- Input values
+- All input values (group stage + knockout predictions)
+- Validation errors
+- Form dirty/touched state
+- Submission state
+
+**useState for:**
+
+- Authentication status
+- Loading/error messages
+- Submission feedback
 - Validation errors
 - Touched/dirty fields
 - Form submission state
@@ -340,26 +404,110 @@ export default function KnockoutSection({
 
 1. **Staged Progression**
    - Each round conditionally renders based on previous completion
-   - Checkboxes for team selection
+   - Checkboxes for team selection (R32→R16→QF→SF)
+   - Radio buttons for final selection (Final→Bronze)
    - Visual feedback on progress (e.g., "Selected: 16/16")
 
 2. **Team Eligibility**
    - Only teams that advanced from previous round are shown
    - Makes predictions consistent and realistic
+   - R32 starts with 32 advancing teams (24 group winners + 8 best 3rd place)
 
 3. **Team Display**
    - Uses `allTeams` Map to show team names alongside codes
    - Reads from left-hand prop passed from BetForm
+   - Example: "BRA (Brazil)" instead of just "BRA"
 
 4. **Bronze Medal Flow**
-   - Automatically shows the two semifinal losers
-   - User picks the bronze medal winner
-   - Simple radio button selection4. **Hidden Field**
-   - Each input also registers `match` number:
-   ```typescript
-   <input type="hidden" value={index + 1}
-     {...register(`knockout.${round.key}.${index}.match`)} />
-   ```
+   - After semifinals are selected, shows the 2 semifinal losers
+   - User picks the bronze medal winner via radio buttons
+   - BronzeSection automatically derives losers from final selections
+
+### Sub-Components
+
+#### RoundOf32Section
+
+- **Purpose:** Starting point for knockout - displays all 32 advancing teams
+- **Input Type:** Checkboxes
+- **Expected Output:** 16 selected teams in `predictions.knockout.roundOf16`
+- **Validation:** Must select exactly 16 teams to proceed
+- **Features:**
+  - Shows all 32 team names with codes
+  - "Select/Deselect All" button for convenience
+  - Progress indicator: "Selected: X/16"
+
+#### ProgressionRound
+
+- **Purpose:** Generic component for R16, QF, SF filtering
+- **Props:**
+  ```typescript
+  interface ProgressionRoundProps {
+    roundName: "Round of 16" | "Quarterfinals" | "Semifinals";
+    nextRoundFieldName:
+      | "predictions.knockout.quarterfinals"
+      | "predictions.knockout.semifinals"
+      | "predictions.knockout.final";
+    eligibleTeams: string[]; // teams from previous round
+    selectCount: 8 | 4 | 2; // number to select for next round
+    allTeams: Map<string, string>;
+  }
+  ```
+- **Input Type:** Checkboxes
+- **Conditional Rendering:** Only shows when previous round has correct number of teams
+- **Example Flow:**
+  - Shows 16 teams from R16
+  - User selects 8 for quarterfinals
+  - QF only appears when R16 has exactly 16 teams
+  - QF shows 8 teams; user selects 4 for SF
+  - SF shows 4 teams; user selects 2 for Final
+
+#### FinalSection
+
+- **Purpose:** Championship match prediction
+- **Input Type:** Radio buttons
+- **Expected Output:** Champion code in `predictions.knockout.champion`
+- **Features:**
+  - Shows exactly 2 finalist teams
+  - Only renders when SF has exactly 2 teams
+  - User picks which of the 2 wins the tournament
+  - Saves finalist names to `predictions.knockout.final` array
+
+#### BronzeSection
+
+- **Purpose:** Bronze medal (3rd place) match prediction
+- **Input Type:** Two radio button groups
+- **Expected Output:**
+  ```typescript
+  bronze: {
+    finalist1: string; // first SF loser (display only)
+    finalist2: string; // second SF loser (display only)
+    winner: string; // user's bronze winner pick
+  }
+  ```
+- **How It Works:**
+  1. Watches `predictions.knockout.final` (the 2 finalists)
+  2. Derives 2 semifinal losers (the teams that lost in SF but weren't finalists)
+  3. Displays both semifinal losers with labels "Bronze Finalist 1" and "Bronze Finalist 2"
+  4. User selects which one wins the bronze medal via radio buttons
+  5. Saves selection to `predictions.knockout.bronze.winner`
+- **Example:**
+
+  ```
+  Semifinals: [TeamA, TeamB, TeamC, TeamD]
+  Final (user selects): [TeamA, TeamB]
+
+  Semifinal Losers: TeamC, TeamD
+  Bronze Match: TeamC vs TeamD
+  User picks: TeamC
+
+  Result: bronze.winner = "TeamC"
+  ```
+
+- **Features:**
+  - Automatically derives bronze participants from semifinal results
+  - Only renders when final has exactly 2 teams
+  - Simple radio button UI with clear team names
+  - Counts toward total knockout score (1 point if correct)
 
 ---
 

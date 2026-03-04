@@ -23,7 +23,7 @@ Stores the World Cup 2026 structure:
 
 - 12 groups with 4 teams each
 - 72 group stage matches
-- 31 knockout matches (16 + 8 + 4 + 2 + 1)
+- 32 knockout matches (16 + 8 + 4 + 2 + 1 + 1)
 
 ### Schema
 
@@ -45,6 +45,8 @@ interface ITournament {
     quarterFinals: { match: number }[]; // 4 matches
     semiFinals: { match: number }[]; // 2 matches
     final: { match: number }[]; // 1 match
+    bronzeMatch: { match: number }[]; // 1 match
+    ;
   };
 }
 ```
