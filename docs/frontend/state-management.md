@@ -22,15 +22,25 @@ How state is managed in the World Cup betting app using React Hook Form.
 
 ## State Management Overview
 
-### No Global State Needed
+### Minimal Global State
 
 **Phase 1** uses a simple, localized approach:
 
 - **Server state:** MongoDB (tournaments, bets, solutions)
 - **Form state:** React Hook Form (all user inputs)
+- **Auth state:** AuthContext (`AuthProvider`, `useAuth`)
 - **UI state:** React useState (loading, errors, messages)
 
-**No Redux, Zustand, or Context needed** — form is the only complex state.
+No Redux/Zustand is used. Context is used only for shared authentication state.
+
+### AuthContext Flow
+
+Authentication state is shared globally through `src/context/AuthContext.tsx`:
+
+- `AuthProvider` wraps the app in `src/app/layout.tsx`
+- `useAuth()` exposes `authUser`, `isAuthLoading`, `refreshAuth`
+- `Header.tsx` and `BetForm.tsx` consume the same auth state
+- `refreshAuth()` fetches `/api/auth/me` and updates context state
 
 ---
 

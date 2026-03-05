@@ -35,10 +35,10 @@ Standings are sorted by:
 
 ```
 page.tsx (Server Component)
-    ↓
-BetForm.tsx (Client Component)
-    ├── GroupStageSection.tsx
-    └── KnockoutSection.tsx
+    ├── Leaderboard.tsx (Client Component)
+    └── BetForm.tsx (Client Component)
+        ├── GroupStageSection.tsx
+        └── KnockoutSection.tsx
 ```
 
 ---
@@ -83,8 +83,10 @@ Receives the tournament structure from `page.tsx`.
    - Passes advancing teams to KnockoutSection component
 
 5. **Authentication Check**
-   - Requires user login via GET `/api/auth/me`
-   - Shows login/register prompt if not authenticated
+
+- Uses `useAuth()` from `AuthContext`
+- Calls `refreshAuth()` via effect to sync latest auth state
+- Shows login/register prompt if not authenticated
 
 6. **Form Submission**
    - Sends POST to `/api/bets` with full predictions
@@ -96,19 +98,19 @@ Receives the tournament structure from `page.tsx`.
 ```typescript
 'use client';
 
+import { useEffect } from 'react';
 import { useForm, FormProvider, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { betSchema, BetInput } from '@/lib/validationSchemas';
 import { deriveAdvancingTeams } from '@/lib/deriveAdvancingTeams';
+import { useAuth } from '@/context/AuthContext';
 
 export default function BetForm({ tournamentId, tournamentData }: BetFormProps) {
-  // 1. Check auth status
+  const { authUser, isAuthLoading, refreshAuth } = useAuth();
+
+  // 1. Refresh auth status on mount
   useEffect(() => {
-    const checkAuth = async () => {
-      const response = await fetch('/api/auth/me');
-      setAuthUser(response.ok ? await response.json() : null);
-    };
-    checkAuth();
+    refreshAuth();
   }, []);
 
   // 2. Initialize form with progression-based knockout structure
@@ -131,11 +133,7 @@ export default function BetForm({ tournamentId, tournamentData }: BetFormProps) 
           semifinals: [],          // 4 advancing teams
           final: [],               // 2 finalists
           champion: "",            // 1 champion
-          bronze: {
-            finalist1: "",         // SF loser 1
-            finalist2: "",         // SF loser 2
-            winner: "",            // Bronze winner
-          },
+          bronze: "",              // Bronze winner team code
         },
       },
     },
@@ -209,12 +207,12 @@ export default function BetForm({ tournamentId, tournamentData }: BetFormProps) 
 
 **useState for:**
 
-- Authentication status
 - Loading/error messages
 - Submission feedback
-- Validation errors
-- Touched/dirty fields
-- Form submission state
+
+**Auth state source:**
+
+- `AuthContext` via `useAuth()`
 
 ### Validation
 
@@ -475,21 +473,17 @@ export default function KnockoutSection({
 #### BronzeSection
 
 - **Purpose:** Bronze medal (3rd place) match prediction
-- **Input Type:** Two radio button groups
+- **Input Type:** Radio button group
 - **Expected Output:**
   ```typescript
-  bronze: {
-    finalist1: string; // first SF loser (display only)
-    finalist2: string; // second SF loser (display only)
-    winner: string; // user's bronze winner pick
-  }
+  bronze: string; // user's bronze winner team code
   ```
 - **How It Works:**
   1. Watches `predictions.knockout.final` (the 2 finalists)
   2. Derives 2 semifinal losers (the teams that lost in SF but weren't finalists)
-  3. Displays both semifinal losers with labels "Bronze Finalist 1" and "Bronze Finalist 2"
+  3. Displays the two eligible bronze teams
   4. User selects which one wins the bronze medal via radio buttons
-  5. Saves selection to `predictions.knockout.bronze.winner`
+  5. Saves selection to `predictions.knockout.bronze`
 - **Example:**
 
   ```
@@ -500,7 +494,7 @@ export default function KnockoutSection({
   Bronze Match: TeamC vs TeamD
   User picks: TeamC
 
-  Result: bronze.winner = "TeamC"
+  Result: bronze = "TeamC"
   ```
 
 - **Features:**
@@ -508,6 +502,133 @@ export default function KnockoutSection({
   - Only renders when final has exactly 2 teams
   - Simple radio button UI with clear team names
   - Counts toward total knockout score (1 point if correct)
+
+---
+
+## 4. Leaderboard.tsx
+
+**Type:** Client Component (`"use client"`)
+
+**Purpose:** Display top-scoring bets with usernames, providing visibility into tournament rankings.
+
+### Props
+
+```typescript
+interface LeaderboardProps {
+  tournamentId: string;
+  limit?: number; // Default: 10
+}
+```
+
+### Key Features
+
+1. **Public Data Fetching**
+   - Calls `GET /api/leaderboard?tournamentId=...&limit=...`
+   - No authentication required (public read-only endpoint)
+   - Auto-fetches on mount and when props change
+
+2. **Loading State**
+   - Shows animated spinner during initial fetch
+   - Prevents layout shift with consistent container sizing
+
+3. **Error Handling**
+   - Displays error message with retry button
+   - Logs errors to console for debugging
+   - Red-themed error state for visibility
+
+4. **Empty State**
+   - Shows helpful message when no scored bets exist
+   - Guides users to check back after admin scoring
+
+5. **Leaderboard Table**
+   - Columns: Rank, Username, Group Stage Score, Knockout Score, Total Score
+   - Rank badge with styled circle background
+   - Hover effect on rows for interactivity
+   - Responsive table with horizontal scroll on small screens
+
+6. **Manual Refresh**
+   - Refresh button at bottom to re-fetch after admin scoring updates
+   - Updates leaderboard without page reload
+
+### Code Structure
+
+```typescript
+"use client";
+
+import { useEffect, useState } from "react";
+
+interface LeaderboardEntry {
+  rank: number;
+  username: string;
+  totalScore: number;
+  groupStageScore: number;
+  knockoutScore: number;
+}
+
+export default function Leaderboard({
+  tournamentId,
+  limit = 10,
+}: LeaderboardProps) {
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchLeaderboard();
+  }, [tournamentId, limit]);
+
+  const fetchLeaderboard = async () => {
+    const response = await fetch(
+      `/api/leaderboard?tournamentId=${tournamentId}&limit=${limit}`,
+    );
+    const data = await response.json();
+    setLeaderboard(data.leaderboard);
+  };
+
+  // Render loading, error, empty, or table state...
+}
+```
+
+### State Management
+
+- **leaderboard:** Array of ranked entries from API
+- **isLoading:** Boolean flag for fetch in progress
+- **error:** Error message string or null
+
+### Data Flow
+
+1. Component mounts → `useEffect` triggers `fetchLeaderboard()`
+2. Fetch starts → `isLoading = true`
+3. API returns data → `setLeaderboard(data.leaderboard)`
+4. Fetch completes → `isLoading = false`
+5. User clicks refresh → Manual `fetchLeaderboard()` call
+
+### Styling
+
+- Card container: `rounded-lg border border-gray-200 bg-white p-6`
+- Table header: `bg-gray-50` with semibold text
+- Rank badge: `rounded-full bg-blue-100 text-blue-700`
+- Hover effect: `hover:bg-gray-50` on table rows
+- Refresh button: `bg-blue-600 hover:bg-blue-700`
+
+### Usage
+
+Rendered on homepage alongside BetForm:
+
+```tsx
+// In page.tsx
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+  <div className="lg:col-span-1">
+    <Leaderboard tournamentId={tournamentData._id} limit={10} />
+  </div>
+  <div className="lg:col-span-2">
+    <BetForm
+      tournamentId={tournamentData._id}
+      tournamentData={tournamentData}
+    />
+  </div>
+</div>
+```
 
 ---
 

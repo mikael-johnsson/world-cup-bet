@@ -254,7 +254,7 @@ export function calculateKnockoutScore(
   }
 
   // Score Bronze Medal (1 point for correct winner)
-  if (prediction.bronze.winner === solution.bronze.winner) {
+  if (prediction.bronze === solution.bronze) {
     score += 1;
   }
 

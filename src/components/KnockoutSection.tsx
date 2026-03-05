@@ -293,22 +293,7 @@ function BronzeSection({
       <p className="text-sm text-gray-600 mb-4">
         The two semifinal losers compete for the bronze medal.
       </p>
-      Bronze finalists selection
-      <div className="mb-6 p-4 bg-gray-50 rounded">
-        <p className="font-semibold mb-3">
-          Semifinal Losers (Bronze Competitors):
-        </p>
-        <div className="space-y-2">
-          {bronzeligibleTeams.map((teamCode: string) => (
-            <div
-              key={teamCode}
-              className="p-3 border border-gray-300 rounded bg-white"
-            >
-              {allTeams.get(teamCode) || teamCode}
-            </div>
-          ))}
-        </div>
-      </div>
+
       {/* Bronze winner selection */}
       {bronzeligibleTeams.length === 2 && (
         <div>
@@ -331,13 +316,6 @@ function BronzeSection({
               </label>
             ))}
           </div>
-
-          <p className="text-sm text-gray-600 mt-4">
-            Bronze Winner:{" "}
-            {selectedBronzeFinalists?.winner
-              ? allTeams.get(selectedBronzeFinalists.winner)
-              : "Not selected"}
-          </p>
         </div>
       )}
     </div>

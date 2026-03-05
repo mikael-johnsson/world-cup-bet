@@ -163,11 +163,7 @@ interface IBet {
       semifinals: string[]; // 4 team codes
       final: string[]; // 2 team codes
       champion: string; // Winner team code
-      bronze: {
-        finalist1: string; // Semifinal loser 1
-        finalist2: string; // Semifinal loser 2
-        winner: string; // Bronze medal winner
-      };
+      bronze: string; // Bronze medal winner team code
     };
   };
   scoring: {
@@ -211,11 +207,7 @@ const BetSchema = new Schema<IBet>(
         semifinals: { type: [String], required: true },
         final: { type: [String], required: true },
         champion: { type: String, required: true },
-        bronze: {
-          finalist1: { type: String, required: true },
-          finalist2: { type: String, required: true },
-          winner: { type: String, required: true },
-        },
+        bronze: { type: String, required: true },
       },
     },
     scoring: {
@@ -266,11 +258,7 @@ BetSchema.index({ userId: 1, tournamentId: 1 }, { unique: true, sparse: true });
       "semifinals": ["BRA", "FRA", "GER", "NED"],
       "final": ["BRA", "FRA"],
       "champion": "BRA",
-      "bronze": {
-        "finalist1": "GER",
-        "finalist2": "NED",
-        "winner": "NED"
-      }
+      "bronze": "NED"
     }
   },
   "scoring": {
@@ -324,11 +312,7 @@ interface ISolution {
       semifinals: string[]; // 4 actual advancing teams
       final: string[]; // 2 actual finalists
       champion: string; // Actual winner
-      bronze: {
-        finalist1: string; // Actual SF loser 1
-        finalist2: string; // Actual SF loser 2
-        winner: string; // Actual bronze winner
-      };
+      bronze: string; // Actual bronze winner team code
     };
   };
   createdAt: Date;
@@ -388,11 +372,7 @@ interface ISolution {
       "semifinals": ["BRA", "FRA", "GER", "NED"],
       "final": ["BRA", "FRA"],
       "champion": "FRA",
-      "bronze": {
-        "finalist1": "GER",
-        "finalist2": "NED",
-        "winner": "NED"
-      }
+      "bronze": "NED"
     }
   },
   "createdAt": "2026-03-04T10:00:00.000Z"

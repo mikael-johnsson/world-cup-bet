@@ -1,6 +1,7 @@
 import connectDB from "@/lib/db";
 import { seedTournament } from "@/lib/seedTournament";
 import BetForm from "@/components/BetForm";
+import Leaderboard from "@/components/Leaderboard";
 
 export default async function Home() {
   try {
@@ -26,7 +27,7 @@ export default async function Home() {
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="mb-8 text-center">
             <h1 className="text-4xl font-bold text-blue-900 mb-2">
               2026 FIFA World Cup Betting
@@ -36,10 +37,20 @@ export default async function Home() {
             </p>
           </div>
 
-          <BetForm
-            tournamentId={tournamentData._id}
-            tournamentData={tournamentData}
-          />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left column: Leaderboard */}
+            <div className="lg:col-span-1">
+              <Leaderboard tournamentId={tournamentData._id} limit={10} />
+            </div>
+
+            {/* Right column: BetForm */}
+            <div className="lg:col-span-2">
+              <BetForm
+                tournamentId={tournamentData._id}
+                tournamentData={tournamentData}
+              />
+            </div>
+          </div>
         </div>
       </div>
     );

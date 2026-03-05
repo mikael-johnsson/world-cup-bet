@@ -195,11 +195,7 @@ Phase 2 adds authentication and role-based access control:
       "semifinals": ["BRA", "FRA", "GER", "NED"],
       "final": ["BRA", "FRA"],
       "champion": "BRA",
-      "bronze": {
-        "finalist1": "GER",
-        "finalist2": "NED",
-        "winner": "NED"
-      }
+      "bronze": "NED"
     }
   }
 }
@@ -214,7 +210,7 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 - **semifinals** (4 teams): User predicts which 4 QF teams advance to SF
 - **final** (2 teams): User predicts the final matchup
 - **champion**: User predicts the tournament winner
-- **bronze**: The two semifinal losers automatically play for bronze; user predicts the winner
+- **bronze**: User predicts the bronze medal winner team code
 
 **Validation Rules**
 
@@ -223,7 +219,7 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 - `semifinals`: Exactly 4 team codes
 - `final`: Exactly 2 team codes
 - `champion`: Non-empty team code
-- `bronze`: Object with two semifinal losers and the predicted winner
+- `bronze`: Non-empty team code for bronze winner
 
 **Response (Success - 201 or 200)**
 
@@ -439,6 +435,73 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 **Code Location**
 
 `src/app/api/admin/score-all/route.ts`
+
+---
+
+## Public Routes
+
+### 9. GET /api/leaderboard
+
+**Purpose:** Retrieve top-scoring bets with usernames for a tournament.
+
+**Authentication:** Not required (public endpoint)
+
+**Query Parameters**
+
+- `tournamentId` (required): Tournament's MongoDB ObjectId
+- `limit` (optional): Maximum number of entries to return (default: 10, max: 100)
+
+**Response (Success - 200)**
+
+```json
+{
+  "leaderboard": [
+    {
+      "rank": 1,
+      "username": "micke_bets",
+      "totalScore": 45,
+      "groupStageScore": 28,
+      "knockoutScore": 17
+    },
+    {
+      "rank": 2,
+      "username": "john_doe",
+      "totalScore": 42,
+      "groupStageScore": 26,
+      "knockoutScore": 16
+    }
+  ]
+}
+```
+
+**Response (Error - 400 Missing tournamentId)**
+
+```json
+{
+  "error": "tournamentId is required"
+}
+```
+
+**Response (Error - 500 Server Error)**
+
+```json
+{
+  "error": "Failed to fetch leaderboard"
+}
+```
+
+**Key Implementation Details**
+
+- Returns only bets with `userId` present (authenticated-era bets)
+- Ranks by `scoring.totalScore` descending, then `submittedAt` ascending for consistent tie-breaking
+- Uses manual user lookup (queries User collection separately) since `Bet.userId` is string type
+- Returns "Unknown" as username fallback if user record not found
+- Empty leaderboard `[]` if no scored bets exist
+- Does NOT trigger scoring calculation (read-only operation)
+
+**Code Location**
+
+`src/app/api/leaderboard/route.ts`
 
 ---
 

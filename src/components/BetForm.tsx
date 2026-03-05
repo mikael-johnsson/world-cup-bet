@@ -38,6 +38,8 @@ export default function BetForm({
       const response = await fetch(`/api/bets?tournamentId=${tournamentId}`);
       if (response.ok) {
         const data = await response.json();
+        console.log("this is existingBet: ", data);
+
         if (data.predictions) {
           setExistingBet(data as BetInput);
         }
@@ -79,6 +81,12 @@ export default function BetForm({
       },
     },
   });
+
+  useEffect(() => {
+    if (existingBet) {
+      methods.reset(existingBet);
+    }
+  }, [existingBet, methods]);
 
   // Watch group stage to know when to show knockout
   const groupStageWatch = useWatch({

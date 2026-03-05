@@ -135,11 +135,7 @@ knockout: {
   semifinals: ["BRA", "FRA", "GER", ...],       // 4 teams
   final: ["BRA", "FRA"],                        // 2 teams
   champion: "BRA",                              // 1 team
-  bronze: {
-    finalist1: "GER",
-    finalist2: "NED",
-    winner: "NED"
-  }
+  bronze: "NED"                                // bronze winner team code
 }
 ```
 
