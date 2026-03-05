@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useForm, FormProvider, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { betSchema, BetInput } from "@/lib/validationSchemas";
 import { deriveAdvancingTeams } from "@/lib/deriveAdvancingTeams";
+import { useAuth } from "@/context/AuthContext";
 import GroupStageSection from "./GroupStageSection";
 import KnockoutSection from "./KnockoutSection";
 import Link from "next/link";
@@ -14,49 +15,49 @@ interface BetFormProps {
   tournamentData: any; // Full tournament document, this should be changed
 }
 
-interface AuthUser {
-  userId: string;
-  username: string;
-  role: "user" | "admin";
-}
-
 export default function BetForm({
   tournamentId,
   tournamentData,
 }: BetFormProps) {
+  const { authUser, isAuthLoading, refreshAuth } = useAuth();
+  const [existingBet, setExistingBet] = useState<BetInput | null>(null);
+  const [isLoadingBet, setIsLoadingBet] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState<{
     type: "success" | "error";
     text: string;
   } | null>(null);
-  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
-  // Check authentication status on component mount
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch("/api/auth/me");
-        if (response.ok) {
-          const user = await response.json();
-          setAuthUser(user);
-        } else {
-          setAuthUser(null);
-        }
-      } catch (error) {
-        console.error("Error checking authentication:", error);
-        setAuthUser(null);
-      } finally {
-        setIsAuthLoading(false);
-      }
-    };
-
-    checkAuth();
+    refreshAuth();
   }, []);
+
+  const fetchExistingBet = async () => {
+    setIsLoadingBet(true);
+    try {
+      const response = await fetch(`/api/bets?tournamentId=${tournamentId}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.predictions) {
+          setExistingBet(data as BetInput);
+        }
+      }
+    } catch (error) {
+      console.error("Error loading existing bet:", error);
+    } finally {
+      setIsLoadingBet(false);
+    }
+  };
+
+  useEffect(() => {
+    if (authUser && !isAuthLoading) {
+      fetchExistingBet();
+    }
+  }, [authUser, isAuthLoading, tournamentId]);
 
   const methods = useForm<BetInput>({
     resolver: zodResolver(betSchema),
-    defaultValues: {
+    defaultValues: existingBet || {
       tournamentId,
       predictions: {
         groupStage: tournamentData.groups.map((group: any) => ({
@@ -73,11 +74,7 @@ export default function BetForm({
           semifinals: [],
           final: [],
           champion: "",
-          bronze: {
-            finalist1: "",
-            finalist2: "",
-            winner: "",
-          },
+          bronze: "",
         },
       },
     },
@@ -121,7 +118,17 @@ export default function BetForm({
     return map;
   }, [tournamentData.groups]);
 
+  // Check if button is invalid
+  const onInvalid = (errors: any) => {
+    console.error("Validation blocked submit:", errors);
+    setSubmitMessage({
+      type: "error",
+      text: "Form is invalid. Check knockout selections.",
+    });
+  };
+
   const onSubmit = async (data: BetInput) => {
+    console.log("Submitting bet:", data);
     setIsSubmitting(true);
     setSubmitMessage(null);
 
@@ -199,7 +206,7 @@ export default function BetForm({
   return (
     <FormProvider {...methods}>
       <form
-        onSubmit={methods.handleSubmit(onSubmit)}
+        onSubmit={methods.handleSubmit(onSubmit, onInvalid)}
         className="space-y-8 max-w-6xl mx-auto"
       >
         <h1 className="text-3xl font-bold mb-8">World Cup Bet Form</h1>

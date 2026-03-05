@@ -25,76 +25,12 @@ export interface TournamentDocument extends Document {
     }>;
   }>;
   knockout: {
-    roundOf32?: Array<{
-      matchId: string;
-      teamA: {
-        code: string;
-        name: string;
-      };
-      teamB: {
-        code: string;
-        name: string;
-      };
-      winner?: string;
-      matchDate?: Date;
-      status: "pending" | "completed";
-    }>;
-    roundOf16?: Array<{
-      matchId: string;
-      teamA: {
-        code: string;
-        name: string;
-      };
-      teamB: {
-        code: string;
-        name: string;
-      };
-      winner?: string;
-      matchDate?: Date;
-      status: "pending" | "completed";
-    }>;
-    quarterfinals?: Array<{
-      matchId: string;
-      teamA: {
-        code: string;
-        name: string;
-      };
-      teamB: {
-        code: string;
-        name: string;
-      };
-      winner?: string;
-      matchDate?: Date;
-      status: "pending" | "completed";
-    }>;
-    semifinals?: Array<{
-      matchId: string;
-      teamA: {
-        code: string;
-        name: string;
-      };
-      teamB: {
-        code: string;
-        name: string;
-      };
-      winner?: string;
-      matchDate?: Date;
-      status: "pending" | "completed";
-    }>;
-    final?: Array<{
-      matchId: string;
-      teamA: {
-        code: string;
-        name: string;
-      };
-      teamB: {
-        code: string;
-        name: string;
-      };
-      winner?: string;
-      matchDate?: Date;
-      status: "pending" | "completed";
-    }>;
+    roundOf16: { type: [String]; default: [] };
+    quarterfinals: { type: [String]; default: [] };
+    semifinals: { type: [String]; default: [] };
+    final: { type: [String]; default: [] };
+    champion: { type: String; default: "" };
+    bronze: { type: String; default: "" };
   };
   createdAt?: Date;
 }
@@ -135,106 +71,12 @@ const tournamentSchema = new Schema(
       },
     ],
     knockout: {
-      roundOf32: [
-        {
-          matchId: { type: String, required: true },
-          teamA: {
-            code: String,
-            name: String,
-          },
-          teamB: {
-            code: String,
-            name: String,
-          },
-          winner: String,
-          matchDate: Date,
-          status: {
-            type: String,
-            enum: ["pending", "completed"],
-            default: "pending",
-          },
-        },
-      ],
-      roundOf16: [
-        {
-          matchId: { type: String, required: true },
-          teamA: {
-            code: String,
-            name: String,
-          },
-          teamB: {
-            code: String,
-            name: String,
-          },
-          winner: String,
-          matchDate: Date,
-          status: {
-            type: String,
-            enum: ["pending", "completed"],
-            default: "pending",
-          },
-        },
-      ],
-      quarterfinals: [
-        {
-          matchId: { type: String, required: true },
-          teamA: {
-            code: String,
-            name: String,
-          },
-          teamB: {
-            code: String,
-            name: String,
-          },
-          winner: String,
-          matchDate: Date,
-          status: {
-            type: String,
-            enum: ["pending", "completed"],
-            default: "pending",
-          },
-        },
-      ],
-      semifinals: [
-        {
-          matchId: { type: String, required: true },
-          teamA: {
-            code: String,
-            name: String,
-          },
-          teamB: {
-            code: String,
-            name: String,
-          },
-          winner: String,
-          matchDate: Date,
-          status: {
-            type: String,
-            enum: ["pending", "completed"],
-            default: "pending",
-          },
-        },
-      ],
-      final: [
-        {
-          matchId: { type: String, required: true },
-          teamA: {
-            code: String,
-            name: String,
-          },
-          teamB: {
-            code: String,
-            name: String,
-          },
-          winner: String,
-          matchDate: Date,
-          status: {
-            type: String,
-            enum: ["pending", "completed"],
-            default: "pending",
-          },
-        },
-      ],
+      roundOf16: { type: [String], default: [] },
+      quarterfinals: { type: [String], default: [] },
+      semifinals: { type: [String], default: [] },
+      final: { type: [String], default: [] },
+      champion: { type: String, default: "" },
+      bronze: { type: String, default: "" },
     },
   },
   { timestamps: true },

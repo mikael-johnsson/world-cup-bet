@@ -18,11 +18,7 @@ export interface BetDocument extends Document {
       semifinals: string[]; // 4 advancing team codes
       final: string[]; // 2 advancing team codes (finalists)
       champion: string; // Winner
-      bronze: {
-        finalist1: string; // First semifinal loser
-        finalist2: string; // Second semifinal loser
-        winner: string; // Bronze medal winner
-      };
+      bronze: string; // Bronze medal winner team code
     };
   };
   scoring: {
@@ -62,11 +58,7 @@ const betSchema = new Schema(
         semifinals: { type: [String], required: true },
         final: { type: [String], required: true },
         champion: { type: String, required: true },
-        bronze: {
-          finalist1: { type: String, required: true },
-          finalist2: { type: String, required: true },
-          winner: { type: String, required: true },
-        },
+        bronze: { type: String, required: true },
       },
     },
     scoring: {

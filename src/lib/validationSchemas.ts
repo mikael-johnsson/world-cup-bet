@@ -23,11 +23,7 @@ export const knockoutProgressionSchema = z.object({
     .length(4, "Must select exactly 4 teams for Semifinals"),
   final: z.array(z.string()).length(2, "Must select exactly 2 teams for Final"),
   champion: z.string().min(2, "Champion team code is required"),
-  bronze: z.object({
-    finalist1: z.string().min(2, "First bronze finalist team code required"),
-    finalist2: z.string().min(2, "Second bronze finalist team code required"),
-    winner: z.string().min(2, "Bronze medal winner team code required"),
-  }),
+  bronze: z.string().min(2, "Bronze medal winner team code is required"),
 });
 
 export const betPredictionsSchema = z.object({

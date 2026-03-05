@@ -293,8 +293,7 @@ function BronzeSection({
       <p className="text-sm text-gray-600 mb-4">
         The two semifinal losers compete for the bronze medal.
       </p>
-
-      {/* Bronze finalists selection */}
+      Bronze finalists selection
       <div className="mb-6 p-4 bg-gray-50 rounded">
         <p className="font-semibold mb-3">
           Semifinal Losers (Bronze Competitors):
@@ -310,7 +309,6 @@ function BronzeSection({
           ))}
         </div>
       </div>
-
       {/* Bronze winner selection */}
       {bronzeligibleTeams.length === 2 && (
         <div>
@@ -324,7 +322,7 @@ function BronzeSection({
                 <input
                   type="radio"
                   value={teamCode}
-                  {...register("predictions.knockout.bronze.winner")}
+                  {...register("predictions.knockout.bronze")}
                   className="w-4 h-4"
                 />
                 <span className="font-semibold text-lg">

@@ -19,28 +19,28 @@ export interface Group {
   fixtures: GroupFixture[];
 }
 
-export interface KnockoutMatch {
-  matchId: string;
-  teamA: Team;
-  teamB: Team;
-  winner?: string; // team code
-  matchDate?: string; // ISO 8601 date string from server
-  status: "pending" | "completed";
-}
+// export interface KnockoutMatch {
+//   matchId: string;
+//   teamA: Team;
+//   teamB: Team;
+//   winner?: string; // team code
+//   matchDate?: string; // ISO 8601 date string from server
+//   status: "pending" | "completed";
+// }
 
-export interface KnockoutRound {
-  roundOf32?: KnockoutMatch[];
-  roundOf16?: KnockoutMatch[];
-  quarterfinals?: KnockoutMatch[];
-  semifinals?: KnockoutMatch[];
-  final?: KnockoutMatch[];
-}
+// export interface KnockoutRound {
+//   roundOf32?: KnockoutMatch[];
+//   roundOf16?: KnockoutMatch[];
+//   quarterfinals?: KnockoutMatch[];
+//   semifinals?: KnockoutMatch[];
+//   final?: KnockoutMatch[];
+// }
 
 export interface TournamentType {
   _id?: string;
   year: number;
   groups: Group[];
-  knockout: KnockoutRound;
+  knockout: KnockoutProgression;
   createdAt?: string; // ISO 8601 date string from server
 }
 
@@ -59,11 +59,7 @@ export interface KnockoutProgression {
   semifinals: string[]; // 4 teams advance to SF
   final: string[]; // 2 teams in final
   champion: string; // Winner of the final
-  bronze: {
-    finalist1: string; // First semifinal loser
-    finalist2: string; // Second semifinal loser
-    winner: string; // Winner of bronze medal match
-  };
+  bronze: string; // Bronze medal winner team code
 }
 
 export interface BetPredictions {
