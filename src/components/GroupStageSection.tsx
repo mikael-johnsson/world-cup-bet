@@ -8,17 +8,23 @@ import {
   calculateThirdPlaceStandings,
 } from "@/lib/standings/calculateGroupStandings";
 import { TeamStanding, ThirdPlaceStanding } from "@/types";
+import ResultComparison from "./ResultComparison";
 
 interface GroupStageSectionProps {
   groups: any[];
+  solution?: any;
 }
 /**
  *
  * @param groups - Array of group objects, each containing teams and fixtures
+ * @param solution - Optional solution object containing actual results
  * @returns A full page with inputs for group stage predictions and dynamic
  * standings tables that update as the user enters predictions.
  */
-export default function GroupStageSection({ groups }: GroupStageSectionProps) {
+export default function GroupStageSection({
+  groups,
+  solution,
+}: GroupStageSectionProps) {
   const { control } = useFormContext<BetInput>();
   const { fields: groupFields } = useFieldArray({
     control,
@@ -74,6 +80,8 @@ export default function GroupStageSection({ groups }: GroupStageSectionProps) {
                     groupIdx={groupIdx}
                     fixtureIdx={fixtureIdx}
                     fixture={fixture}
+                    solution={solution}
+                    groupName={group.name}
                   />
                 ))}
               </div>
@@ -190,6 +198,8 @@ interface MatchInputProps {
   groupIdx: number;
   fixtureIdx: number;
   fixture: any;
+  solution?: any;
+  groupName: string;
 }
 
 /**
@@ -197,52 +207,69 @@ interface MatchInputProps {
  * @param groupIdx - Index of the group in the groups array
  * @param fixtureIdx - Index of the fixture within the group's fixtures array
  * @param fixture - The fixture object containing home and away team info and match date
- * @returns A styled input component for predicting match results
+ * @param solution - Optional solution object containing actual results
+ * @param groupName - Name of the group (e.g., "Group A")
+ * @returns A styled input component for predicting match results with actual results displayed when available
  */
-function MatchInput({ groupIdx, fixtureIdx, fixture }: MatchInputProps) {
+function MatchInput({
+  groupIdx,
+  fixtureIdx,
+  fixture,
+  solution,
+  groupName,
+}: MatchInputProps) {
   const { register } = useFormContext<BetInput>();
 
   const homeTeamCode = fixture.homeTeam.code;
   const awayTeamCode = fixture.awayTeam.code;
 
   return (
-    <div className="flex items-center justify-between gap-4 p-3 bg-gray-50 rounded">
-      <div className="flex-1">
-        <p className="text-sm font-semibold">
-          {fixture.homeTeam.name} vs {fixture.awayTeam.name}
-        </p>
-        <p className="text-xs text-gray-500">
-          {new Date(fixture.matchDate).toLocaleString()}
-        </p>
-      </div>
+    <div className="space-y-2">
+      <div className="flex items-center justify-between gap-4 p-3 bg-gray-50 rounded">
+        <div className="flex-1">
+          <p className="text-sm font-semibold">
+            {fixture.homeTeam.name} vs {fixture.awayTeam.name}
+          </p>
+          <p className="text-xs text-gray-500">
+            {new Date(fixture.matchDate).toLocaleString()}
+          </p>
+        </div>
 
-      <div className="flex items-center gap-2">
-        <input
-          type="number"
-          min="0"
-          max="10"
-          {...register(
-            `predictions.groupStage.${groupIdx}.matches.${fixtureIdx}.predictedHomeGoals`,
-            {
-              valueAsNumber: true,
-            },
-          )}
-          className="w-12 px-2 py-1 border border-gray-300 rounded text-center"
-          placeholder="0"
-        />
-        <span className="font-bold text-gray-500">-</span>
-        <input
-          type="number"
-          min="0"
-          max="10"
-          {...register(
-            `predictions.groupStage.${groupIdx}.matches.${fixtureIdx}.predictedAwayGoals`,
-            {
-              valueAsNumber: true,
-            },
-          )}
-          className="w-12 px-2 py-1 border border-gray-300 rounded text-center"
-          placeholder="0"
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            min="0"
+            max="10"
+            {...register(
+              `predictions.groupStage.${groupIdx}.matches.${fixtureIdx}.predictedHomeGoals`,
+              {
+                valueAsNumber: true,
+              },
+            )}
+            className="w-12 px-2 py-1 border border-gray-300 rounded text-center"
+            placeholder="0"
+          />
+          <span className="font-bold text-gray-500">-</span>
+          <input
+            type="number"
+            min="0"
+            max="10"
+            {...register(
+              `predictions.groupStage.${groupIdx}.matches.${fixtureIdx}.predictedAwayGoals`,
+              {
+                valueAsNumber: true,
+              },
+            )}
+            className="w-12 px-2 py-1 border border-gray-300 rounded text-center"
+            placeholder="0"
+          />
+        </div>
+      </div>
+      <div className="flex justify-end">
+        <ResultComparison
+          matchId={fixture.matchId}
+          solution={solution}
+          groupName={groupName}
         />
       </div>
     </div>

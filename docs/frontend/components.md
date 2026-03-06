@@ -38,7 +38,9 @@ page.tsx (Server Component)
     ├── Leaderboard.tsx (Client Component)
     └── BetForm.tsx (Client Component)
         ├── GroupStageSection.tsx
+        │   └── ResultComparison.tsx
         └── KnockoutSection.tsx
+            └── ResultComparison.tsx
 ```
 
 ---
@@ -97,7 +99,15 @@ Receives the tournament structure from `page.tsx`.
 - Shows "Betting period has ended" message below form after deadline
 - Backend also prevents bet submission after deadline with 400 error (server-side enforcement)
 
-7. **Form Submission**
+7. **Solution Fetching and Result Display**
+
+- Fetches tournament solution from `GET /api/solutions?tournamentId=X` on mount
+- Solution contains actual tournament results (updated progressively by admin)
+- Passes solution data to child components (`GroupStageSection`, `KnockoutSection`)
+- Children use solution to display actual results inline with predictions via `ResultComparison` component
+- Supports partial solutions (e.g., only group stage results available early in tournament)
+
+8. **Form Submission**
    - Sends POST to `/api/bets` with full predictions
    - Updates existing bet or creates new one (per user + tournament)
    - Shows success/error messages
@@ -218,6 +228,8 @@ export default function BetForm({ tournamentId, tournamentData }: BetFormProps) 
 
 - Loading/error messages
 - Submission feedback
+- Deadline date and status (`deadlineDate`, `isDeadlinePassed`)
+- Solution data (`solution`) - actual tournament results from admin
 
 **Auth state source:**
 
@@ -247,14 +259,14 @@ Tailwind CSS classes for responsive design:
 
 **Type:** Client Component (used inside BetForm)
 
-**Purpose:** Renders all 12 groups with 6 matches each (72 total inputs).
+**Purpose:** Renders all 12 groups with 6 matches each (72 total inputs). Displays actual results alongside predictions when solution is available.
 
 ### Props
 
 ```typescript
 interface GroupStageSectionProps {
-  tournament: ITournament;
-  register: UseFormRegister<any>;
+  groups: any[];
+  solution?: any; // Optional solution data containing actual tournament results
 }
 ```
 
@@ -342,7 +354,7 @@ export default function GroupStageSection({
 
 **Type:** Client Component (used inside BetForm)
 
-**Purpose:** Render progression-based knockout predictions where users select advancing teams per round.
+**Purpose:** Render progression-based knockout predictions where users select advancing teams per round. Displays actual results with visual feedback (green/red backgrounds) when solution is available.
 
 ### Props
 
@@ -350,6 +362,7 @@ export default function GroupStageSection({
 interface KnockoutSectionProps {
   advancingTeams: string[]; // 32 teams that advanced from group stage
   allTeams: Map<string, string>; // team code → team name mapping
+  solution?: any; // Optional solution data containing actual knockout results
 }
 ```
 
@@ -641,18 +654,168 @@ Rendered on homepage alongside BetForm:
 
 ---
 
+## 5. ResultComparison.tsx
+
+**Type:** Client Component (used inside GroupStageSection and KnockoutSection)
+
+**Purpose:** Displays actual tournament results from the solution alongside user predictions. Provides visual feedback on prediction accuracy.
+
+### Props
+
+```typescript
+interface ResultComparisonProps {
+  matchId?: string; // For group stage matches
+  solution?: any; // Solution data from admin
+  groupName?: string; // For group stage (e.g., "Group A")
+  roundName?: string; // For knockout (e.g., "roundOf16", "champion", "bronze")
+}
+```
+
+### Key Features
+
+1. **Group Stage Match Results**
+   - Displays actual score (home-away goals) for a specific match
+   - Shown in green badges below the prediction inputs
+   - Right-aligned under the score input
+   - Example: "Actual: 2 - 1"
+
+2. **Knockout Round Results**
+   - For array fields (roundOf16, quarterfinals, semifinals, final):
+     - Does NOT display list of teams
+     - Instead, applies background colors to team selection boxes:
+       - **Green background** (`bg-green-100`): Team actually advanced (in solution)
+       - **Red background** (`bg-red-100`): User predicted this team would advance, but it didn't
+       - **White background**: Neutral/not selected
+   - For single fields (champion, bronze):
+     - Displays actual winner in green badge
+     - Example: "Actual: ARG"
+
+3. **Conditional Rendering**
+   - Only renders when solution data exists for that specific match/round
+   - Returns `null` if no solution available
+   - Supports partial solutions (e.g., only group stage results early in tournament)
+
+### Code Structure
+
+```typescript
+export default function ResultComparison({
+  matchId,
+  solution,
+  groupName,
+  roundName,
+}: ResultComparisonProps) {
+  if (!solution?.predictions) {
+    return null;
+  }
+
+  // Group stage match result
+  if (groupName && matchId) {
+    const groupData = solution.predictions.groupStage?.find(
+      (g: any) => g.groupName === groupName
+    );
+    const matchResult = groupData?.matches?.find(
+      (m: any) => m.matchId === matchId
+    );
+
+    if (!matchResult) return null;
+
+    return (
+      <div className="flex items-center gap-2 text-sm">
+        <span className="text-gray-600 font-medium">Actual:</span>
+        <div className="flex items-center gap-2 bg-green-100 px-2 py-1 rounded">
+          <span className="font-semibold text-green-800">
+            {matchResult.predictedHomeGoals}
+          </span>
+          <span className="text-green-700">-</span>
+          <span className="font-semibold text-green-800">
+            {matchResult.predictedAwayGoals}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  // Knockout single fields (champion, bronze)
+  if (roundName && typeof solution.predictions.knockout?.[roundName] === 'string') {
+    return (
+      <div className="text-sm mt-2">
+        <span className="text-gray-600 font-medium">Actual: </span>
+        <span className="bg-green-100 text-green-800 px-2 py-1 rounded font-semibold">
+          {solution.predictions.knockout[roundName]}
+        </span>
+      </div>
+    );
+  }
+
+  return null;
+}
+```
+
+### Usage
+
+**In GroupStageSection:**
+
+```tsx
+<div className="flex justify-end">
+  <ResultComparison
+    matchId={fixture.matchId}
+    solution={solution}
+    groupName={group.name}
+  />
+</div>
+```
+
+**In KnockoutSection:**
+
+Background colors applied directly to team selection boxes:
+
+```tsx
+// In RoundOf32Section, ProgressionRound, FinalSection, BronzeSection
+const getTeamBgColor = (teamCode: string) => {
+  const actuallyAdvanced = actualAdvancedTeams.includes(teamCode);
+  const userSelected = selectedTeams.includes(teamCode);
+
+  if (actuallyAdvanced) {
+    return "bg-green-100 border-green-300";
+  } else if (userSelected) {
+    return "bg-red-100 border-red-300";
+  }
+  return "bg-white hover:bg-blue-50";
+};
+```
+
+### Styling
+
+- Green badges: `bg-green-100 text-green-800` for actual results
+- Red backgrounds: `bg-red-100 border-red-300` for incorrect predictions
+- Right-aligned in group stage: wrapped in `<div className="flex justify-end">`
+- Small text: `text-sm` for compact display
+
+### Data Flow
+
+1. BetForm fetches solution from `GET /api/solutions?tournamentId=X`
+2. Solution passed to GroupStageSection and KnockoutSection via props
+3. Child sections pass solution to ResultComparison
+4. ResultComparison looks up specific match/round result and displays it
+
+---
+
 ## Component Communication
 
 ### Parent → Child (Props)
 
 ```
 BetForm.tsx
-    ↓ (tournament data)
+    ↓ (groups, solution)
 GroupStageSection.tsx
+    ↓ (matchId, solution, groupName)
+ResultComparison.tsx
 
 BetForm.tsx
-    ↓ (tournament data + register function)
+    ↓ (advancingTeams, allTeams, solution)
 KnockoutSection.tsx
+    ↓ (solution, roundName for background colors)
+ResultComparison.tsx (for champion/bronze display)
 ```
 
 ### Child → Parent (Form State)

@@ -11,6 +11,20 @@ export const groupStagePredictionSchema = z.object({
   ),
 });
 
+// Optional group stage schema for solutions (matches can be empty, groups can be omitted)
+export const optionalGroupStageGroupSchema = z.object({
+  groupName: z.string(),
+  matches: z
+    .array(
+      z.object({
+        matchId: z.string(),
+        predictedHomeGoals: z.number().min(0),
+        predictedAwayGoals: z.number().min(0),
+      }),
+    )
+    .optional(),
+});
+
 export const knockoutProgressionSchema = z.object({
   roundOf16: z
     .array(z.string())
@@ -26,9 +40,40 @@ export const knockoutProgressionSchema = z.object({
   bronze: z.string().min(2, "Bronze medal winner team code is required"),
 });
 
+// Optional knockout schema for partial solutions (admin can submit incremental results)
+export const optionalKnockoutProgressionSchema = z.object({
+  roundOf16: z
+    .array(z.string())
+    .length(16, "Must select exactly 16 teams for Round of 16")
+    .optional(),
+  quarterfinals: z
+    .array(z.string())
+    .length(8, "Must select exactly 8 teams for Quarterfinals")
+    .optional(),
+  semifinals: z
+    .array(z.string())
+    .length(4, "Must select exactly 4 teams for Semifinals")
+    .optional(),
+  final: z
+    .array(z.string())
+    .length(2, "Must select exactly 2 teams for Final")
+    .optional(),
+  champion: z.string().min(2, "Champion team code is required").optional(),
+  bronze: z
+    .string()
+    .min(2, "Bronze medal winner team code is required")
+    .optional(),
+});
+
 export const betPredictionsSchema = z.object({
   groupStage: z.array(groupStagePredictionSchema),
   knockout: knockoutProgressionSchema,
+});
+
+// Solution predictions allow partial data: groups can be omitted, matches within groups can be empty, and knockout can be partial
+export const solutionPredictionsSchema = z.object({
+  groupStage: z.array(optionalGroupStageGroupSchema).optional(),
+  knockout: optionalKnockoutProgressionSchema,
 });
 
 export const betSchema = z.object({

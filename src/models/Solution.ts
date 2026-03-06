@@ -3,21 +3,21 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface SolutionDocument extends Document {
   tournamentId: string;
   predictions: {
-    groupStage: Array<{
+    groupStage?: Array<{
       groupName: string;
-      matches: Array<{
+      matches?: Array<{
         matchId: string;
         predictedHomeGoals: number;
         predictedAwayGoals: number;
       }>;
     }>;
     knockout: {
-      roundOf16: string[]; // 16 advancing team codes
-      quarterfinals: string[]; // 8 advancing team codes
-      semifinals: string[]; // 4 advancing team codes
-      final: string[]; // 2 advancing team codes (finalists)
-      champion: string; // Winner
-      bronze: string; // Bronze medal winner team code
+      roundOf16?: string[]; // 16 advancing team codes
+      quarterfinals?: string[]; // 8 advancing team codes
+      semifinals?: string[]; // 4 advancing team codes
+      final?: string[]; // 2 advancing team codes (finalists)
+      champion?: string; // Winner
+      bronze?: string; // Bronze medal winner team code
     };
   };
   createdAt?: Date;
@@ -44,12 +44,12 @@ const solutionSchema = new Schema(
         },
       ],
       knockout: {
-        roundOf16: { type: [String], required: true },
-        quarterfinals: { type: [String], required: true },
-        semifinals: { type: [String], required: true },
-        final: { type: [String], required: true },
-        champion: { type: String, required: true },
-        bronze: { type: String, required: true },
+        roundOf16: { type: [String] },
+        quarterfinals: { type: [String] },
+        semifinals: { type: [String] },
+        final: { type: [String] },
+        champion: { type: String },
+        bronze: { type: String },
       },
     },
   },

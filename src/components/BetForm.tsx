@@ -29,6 +29,7 @@ export default function BetForm({
   } | null>(null);
   const [deadlineDate, setDeadlineDate] = useState<string | null>(null);
   const [isDeadlinePassed, setIsDeadlinePassed] = useState(false);
+  const [solution, setSolution] = useState<any | null>(null);
 
   const fetchDeadline = async () => {
     try {
@@ -40,6 +41,23 @@ export default function BetForm({
       }
     } catch (error) {
       console.error("Error fetching deadline config:", error);
+    }
+  };
+
+  const fetchSolution = async () => {
+    try {
+      const response = await fetch(
+        `/api/solutions?tournamentId=${tournamentId}`,
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setSolution(data.solution);
+      } else if (response.status === 404) {
+        // No solution yet - this is expected early in tournament
+        setSolution(null);
+      }
+    } catch (error) {
+      console.error("Error fetching solution:", error);
     }
   };
 
@@ -65,6 +83,7 @@ export default function BetForm({
   useEffect(() => {
     refreshAuth();
     fetchDeadline();
+    fetchSolution();
   }, []);
 
   useEffect(() => {
@@ -274,11 +293,15 @@ export default function BetForm({
         )}
 
         {/* Group Stage Section */}
-        <GroupStageSection groups={tournamentData.groups} />
+        <GroupStageSection groups={tournamentData.groups} solution={solution} />
 
         {/* Knockout Section - only show if group stage is filled */}
         {isGroupStageFilled && advancingTeams.length === 32 && (
-          <KnockoutSection advancingTeams={advancingTeams} allTeams={teamMap} />
+          <KnockoutSection
+            advancingTeams={advancingTeams}
+            allTeams={teamMap}
+            solution={solution}
+          />
         )}
 
         {/* Submit Button */}

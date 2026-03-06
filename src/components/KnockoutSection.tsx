@@ -2,10 +2,12 @@
 
 import { useFormContext, useWatch, useFieldArray } from "react-hook-form";
 import { BetInput } from "@/lib/validationSchemas";
+import ResultComparison from "./ResultComparison";
 
 interface KnockoutSectionProps {
   advancingTeams: string[]; // 32 teams that advanced from groups
   allTeams: Map<string, string>; // team code -> team name mapping
+  solution?: any; // Optional solution data to display actual results
 }
 
 /**
@@ -21,6 +23,7 @@ interface KnockoutSectionProps {
 export default function KnockoutSection({
   advancingTeams,
   allTeams,
+  solution,
 }: KnockoutSectionProps) {
   const { control } = useFormContext<BetInput>();
 
@@ -47,6 +50,7 @@ export default function KnockoutSection({
         advancingTeams={advancingTeams}
         allTeams={allTeams}
         selectedTeams={knockoutPredictions?.roundOf16 || []}
+        solution={solution}
       />
 
       {/* Round of 16 - if 16 teams selected in R32 */}
@@ -58,6 +62,8 @@ export default function KnockoutSection({
           selectedTeams={knockoutPredictions.quarterfinals || []}
           selectCount={8}
           allTeams={allTeams}
+          solution={solution}
+          solutionRoundName="quarterfinals"
         />
       )}
 
@@ -70,6 +76,8 @@ export default function KnockoutSection({
           selectedTeams={knockoutPredictions.semifinals || []}
           selectCount={4}
           allTeams={allTeams}
+          solution={solution}
+          solutionRoundName="semifinals"
         />
       )}
 
@@ -82,6 +90,8 @@ export default function KnockoutSection({
           selectedTeams={knockoutPredictions.final || []}
           selectCount={2}
           allTeams={allTeams}
+          solution={solution}
+          solutionRoundName="final"
         />
       )}
 
@@ -92,12 +102,14 @@ export default function KnockoutSection({
             finalists={knockoutPredictions.final}
             allTeams={allTeams}
             selectedChampion={knockoutPredictions.champion}
+            solution={solution}
           />
           <BronzeSection
             semifinalLosers={knockoutPredictions.semifinals}
             selectedBronzeFinalists={knockoutPredictions.bronze}
             allTeams={allTeams}
             knockoutPredictions={knockoutPredictions}
+            solution={solution}
           />
         </>
       )}
@@ -113,14 +125,32 @@ interface RoundOf32SectionProps {
   advancingTeams: string[];
   allTeams: Map<string, string>;
   selectedTeams: string[];
+  solution?: any;
 }
 
 function RoundOf32Section({
   advancingTeams,
   allTeams,
   selectedTeams,
+  solution,
 }: RoundOf32SectionProps) {
   const { register } = useFormContext<BetInput>();
+
+  // Get actual teams that advanced from solution
+  const actualAdvancedTeams = solution?.predictions?.knockout?.roundOf16 || [];
+
+  // Helper to determine background color for each team
+  const getTeamBgColor = (teamCode: string) => {
+    const actuallyAdvanced = actualAdvancedTeams.includes(teamCode);
+    const userSelected = selectedTeams.includes(teamCode);
+
+    if (actuallyAdvanced) {
+      return "bg-green-100 border-green-300";
+    } else if (userSelected) {
+      return "bg-red-100 border-red-300";
+    }
+    return "bg-white hover:bg-blue-50";
+  };
 
   return (
     <div className="bg-white p-6 rounded-lg border border-gray-200">
@@ -136,7 +166,7 @@ function RoundOf32Section({
         {advancingTeams.map((teamCode) => (
           <label
             key={teamCode}
-            className="flex items-center gap-2 p-3 border border-gray-300 rounded hover:bg-blue-50 cursor-pointer"
+            className={`flex items-center gap-2 p-3 border rounded cursor-pointer ${getTeamBgColor(teamCode)}`}
           >
             <input
               type="checkbox"
@@ -154,6 +184,7 @@ function RoundOf32Section({
       <p className="text-sm text-gray-600 mt-4">
         Selected: {selectedTeams.length} / 16 teams
       </p>
+      <ResultComparison solution={solution} roundName="roundOf16" />
     </div>
   );
 }
@@ -172,6 +203,8 @@ interface ProgressionRoundProps {
   selectedTeams: string[]; // Teams user selected for next round
   selectCount: number; // How many teams should be selected (8, 4, or 2)
   allTeams: Map<string, string>;
+  solution?: any;
+  solutionRoundName?: string;
 }
 
 function ProgressionRound({
@@ -181,8 +214,29 @@ function ProgressionRound({
   selectedTeams,
   selectCount,
   allTeams,
+  solution,
+  solutionRoundName,
 }: ProgressionRoundProps) {
   const { register } = useFormContext<BetInput>();
+
+  // Get actual teams that advanced from solution
+  const actualAdvancedTeams =
+    solutionRoundName && solution?.predictions?.knockout?.[solutionRoundName]
+      ? solution.predictions.knockout[solutionRoundName]
+      : [];
+
+  // Helper to determine background color for each team
+  const getTeamBgColor = (teamCode: string) => {
+    const actuallyAdvanced = actualAdvancedTeams.includes(teamCode);
+    const userSelected = selectedTeams.includes(teamCode);
+
+    if (actuallyAdvanced) {
+      return "bg-green-100 border-green-300";
+    } else if (userSelected) {
+      return "bg-red-100 border-red-300";
+    }
+    return "bg-white hover:bg-blue-50";
+  };
 
   return (
     <div className="bg-white p-6 rounded-lg border border-gray-200">
@@ -194,7 +248,7 @@ function ProgressionRound({
         {eligibleTeams.map((teamCode) => (
           <label
             key={teamCode}
-            className="flex items-center gap-2 p-3 border border-gray-300 rounded hover:bg-blue-50 cursor-pointer"
+            className={`flex items-center gap-2 p-3 border rounded cursor-pointer ${getTeamBgColor(teamCode)}`}
           >
             <input
               type="checkbox"
@@ -212,6 +266,9 @@ function ProgressionRound({
       <p className="text-sm text-gray-600 mt-4">
         Selected: {selectedTeams.length} / {selectCount} teams
       </p>
+      {solutionRoundName && (
+        <ResultComparison solution={solution} roundName={solutionRoundName} />
+      )}
     </div>
   );
 }
@@ -223,14 +280,32 @@ interface FinalSectionProps {
   finalists: string[];
   allTeams: Map<string, string>;
   selectedChampion: string;
+  solution?: any;
 }
 
 function FinalSection({
   finalists,
   allTeams,
   selectedChampion,
+  solution,
 }: FinalSectionProps) {
   const { register } = useFormContext<BetInput>();
+
+  // Get actual champion from solution
+  const actualChampion = solution?.predictions?.knockout?.champion || null;
+
+  // Helper to determine background color for each team
+  const getTeamBgColor = (teamCode: string) => {
+    const isActualChampion = actualChampion === teamCode;
+    const isUserSelected = selectedChampion === teamCode;
+
+    if (isActualChampion) {
+      return "bg-green-100 border-green-300";
+    } else if (isUserSelected) {
+      return "bg-red-100 border-red-300";
+    }
+    return "bg-white hover:bg-blue-50";
+  };
 
   return (
     <div className="bg-white p-6 rounded-lg border border-gray-200">
@@ -240,7 +315,7 @@ function FinalSection({
         {finalists.map((teamCode) => (
           <label
             key={teamCode}
-            className="flex items-center gap-3 p-4 border border-gray-300 rounded hover:bg-blue-50 cursor-pointer"
+            className={`flex items-center gap-3 p-4 border rounded cursor-pointer ${getTeamBgColor(teamCode)}`}
           >
             <input
               type="radio"
@@ -259,6 +334,7 @@ function FinalSection({
         Champion:{" "}
         {selectedChampion ? allTeams.get(selectedChampion) : "Not selected"}
       </p>
+      <ResultComparison solution={solution} roundName="champion" />
     </div>
   );
 }
@@ -271,6 +347,7 @@ interface BronzeSectionProps {
   selectedBronzeFinalists: any;
   allTeams: Map<string, string>;
   knockoutPredictions: any;
+  solution?: any;
 }
 
 function BronzeSection({
@@ -278,6 +355,7 @@ function BronzeSection({
   selectedBronzeFinalists,
   allTeams,
   knockoutPredictions,
+  solution,
 }: BronzeSectionProps) {
   const { register } = useFormContext<BetInput>();
 
@@ -286,6 +364,22 @@ function BronzeSection({
   const bronzeligibleTeams = semifinalLosers.filter(
     (team: string) => !finalists.includes(team),
   );
+
+  // Get actual bronze winner from solution
+  const actualBronzeWinner = solution?.predictions?.knockout?.bronze || null;
+
+  // Helper to determine background color for each team
+  const getTeamBgColor = (teamCode: string) => {
+    const isActualBronzeWinner = actualBronzeWinner === teamCode;
+    const isUserSelected = selectedBronzeFinalists === teamCode;
+
+    if (isActualBronzeWinner) {
+      return "bg-green-100 border-green-300";
+    } else if (isUserSelected) {
+      return "bg-red-100 border-red-300";
+    }
+    return "bg-white hover:bg-orange-50";
+  };
 
   return (
     <div className="bg-white p-6 rounded-lg border border-gray-200">
@@ -302,7 +396,7 @@ function BronzeSection({
             {bronzeligibleTeams.map((teamCode: string) => (
               <label
                 key={teamCode}
-                className="flex items-center gap-3 p-4 border border-gray-300 rounded hover:bg-orange-50 cursor-pointer"
+                className={`flex items-center gap-3 p-4 border rounded cursor-pointer ${getTeamBgColor(teamCode)}`}
               >
                 <input
                   type="radio"
@@ -318,6 +412,7 @@ function BronzeSection({
           </div>
         </div>
       )}
+      <ResultComparison solution={solution} roundName="bronze" />
     </div>
   );
 }

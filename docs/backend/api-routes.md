@@ -311,13 +311,13 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 
 ### 7. POST /api/admin/solution
 
-**Purpose:** Admin sets the actual tournament results (solution).
+**Purpose:** Admin sets the actual tournament results (solution). Supports progressive/partial submissions as tournament progresses.
 
 **Authentication:** Required (HttpOnly cookie)
 
 **Authorization:** Admin role
 
-**Request Body**
+**Request Body (Full Solution Example)**
 
 ```json
 {
@@ -325,7 +325,7 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
   "predictions": {
     "groupStage": [
       {
-        "groupName": "A",
+        "groupName": "Group A",
         "matches": [
           {
             "matchId": "match_1",
@@ -335,17 +335,54 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
         ]
       }
     ],
-    "knockout": [
+    "knockout": {
+      "roundOf16": [
+        "BRA",
+        "ARG",
+        "GER",
+        "FRA",
+        "ESP",
+        "ENG",
+        "NED",
+        "POR",
+        "ITA",
+        "BEL",
+        "URU",
+        "COL",
+        "MEX",
+        "CRO",
+        "DEN",
+        "SUI"
+      ],
+      "quarterfinals": ["BRA", "ARG", "GER", "FRA", "ESP", "ENG", "NED", "POR"],
+      "semifinals": ["BRA", "ARG", "GER", "FRA"],
+      "final": ["BRA", "ARG"],
+      "champion": "ARG",
+      "bronze": "FRA"
+    }
+  }
+}
+```
+
+**Request Body (Partial Solution - Group Stage Only)**
+
+```json
+{
+  "tournamentId": "670f1234567890abcdef1234",
+  "predictions": {
+    "groupStage": [
       {
-        "round": "roundOf32",
+        "groupName": "Group A",
         "matches": [
           {
-            "matchId": "ko_match_1",
-            "predictedWinnerCode": "BRA"
+            "matchId": "match_1",
+            "predictedHomeGoals": 2,
+            "predictedAwayGoals": 1
           }
         ]
       }
-    ]
+    ],
+    "knockout": {}
   }
 }
 ```
@@ -356,7 +393,8 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 {
   "success": true,
   "solutionId": "670f9012345678abcdef9012",
-  "message": "Solution created successfully"
+  "message": "Solution updated successfully",
+  "scoredCount": 12
 }
 ```
 
@@ -375,6 +413,22 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
   "error": "Admin access required"
 }
 ```
+
+**Key Features**
+
+- **Progressive Updates:** Supports partial solutions - admin can submit results incrementally as tournament progresses
+- **Complete Overwrite:** Each POST replaces the previous solution entirely (not a merge)
+- **Auto-Scoring:** Automatically recalculates all bet scores after saving solution
+- **Optional Fields:**
+  - `groupStage` can be omitted or contain partial groups
+  - `knockout` fields (`roundOf16`, `quarterfinals`, `semifinals`, `final`, `champion`, `bronze`) are all optional
+  - Allows submitting just group stage results early in tournament, adding knockout later
+- **Response includes `scoredCount`:** Number of bets that were automatically rescored
+
+**Validation**
+
+- Uses `solutionPredictionsSchema` (allows optional knockout fields)
+- When fields are provided, they must meet validation rules (e.g., `roundOf16` must have exactly 16 teams)
 
 **Code Location**
 
@@ -544,6 +598,107 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 
 ---
 
+### 11. GET /api/solutions
+
+**Purpose:** Retrieve the current solution (actual tournament results) for a tournament.
+
+**Authentication:** Not required (public endpoint)
+
+**Query Parameters**
+
+- `tournamentId` (required): Tournament's MongoDB ObjectId
+
+**Response (Success - 200)**
+
+```json
+{
+  "success": true,
+  "solution": {
+    "_id": "670f9012345678abcdef9012",
+    "tournamentId": "670f1234567890abcdef1234",
+    "predictions": {
+      "groupStage": [
+        {
+          "groupName": "Group A",
+          "matches": [
+            {
+              "matchId": "match_1",
+              "predictedHomeGoals": 2,
+              "predictedAwayGoals": 1
+            }
+          ]
+        }
+      ],
+      "knockout": {
+        "roundOf16": [
+          "BRA",
+          "ARG",
+          "GER",
+          "FRA",
+          "ESP",
+          "ENG",
+          "NED",
+          "POR",
+          "ITA",
+          "BEL",
+          "URU",
+          "COL",
+          "MEX",
+          "CRO",
+          "DEN",
+          "SUI"
+        ],
+        "quarterfinals": [
+          "BRA",
+          "ARG",
+          "GER",
+          "FRA",
+          "ESP",
+          "ENG",
+          "NED",
+          "POR"
+        ],
+        "semifinals": ["BRA", "ARG", "GER", "FRA"],
+        "final": ["BRA", "ARG"],
+        "champion": "ARG",
+        "bronze": "FRA"
+      }
+    },
+    "createdAt": "2026-06-11T22:00:00.000Z"
+  }
+}
+```
+
+**Response (Error - 400 Missing tournamentId)**
+
+```json
+{
+  "error": "tournamentId is required"
+}
+```
+
+**Response (Error - 404 Solution Not Found)**
+
+```json
+{
+  "error": "Solution not found"
+}
+```
+
+**Key Details**
+
+- Public endpoint accessible to all users (no authentication required)
+- Used by frontend to display actual results alongside user predictions
+- Solution may contain partial data (e.g., only group stage early in tournament)
+- Supports progressive tournament result disclosure
+- Returns 404 if no solution exists yet for the tournament
+
+**Code Location**
+
+`src/app/api/solutions/route.ts`
+
+---
+
 ## Validation Schemas
 
 All requests are validated using Zod schemas in `src/lib/validationSchemas.ts`:
@@ -551,7 +706,15 @@ All requests are validated using Zod schemas in `src/lib/validationSchemas.ts`:
 - `registerSchema` → Username, email, firstName, lastName, password validation for `/api/auth/register`
 - `loginSchema` → Username and password validation for `/api/auth/login`
 - `betSchema` → Bet structure validation for `/api/bets` POST
-- `betPredictionsSchema` → Solution structure validation for `/api/admin/solution` POST
+- `betPredictionsSchema` → User bet predictions (requires all knockout fields) for `/api/bets` POST
+- `solutionPredictionsSchema` → Solution structure validation (allows optional knockout fields) for `/api/admin/solution` POST
+- `optionalKnockoutProgressionSchema` → Knockout predictions with all fields optional for progressive updates
+- `optionalGroupStageGroupSchema` → Group stage predictions with optional matches array for partial solutions
+
+**Key Difference: Bet vs Solution Schemas**
+
+- **User bets** (`betPredictionsSchema`): Requires complete predictions including all knockout fields
+- **Admin solutions** (`solutionPredictionsSchema`): All knockout fields optional, groupStage optional, supports partial data
 
 **Example Validation Error**
 
