@@ -30,7 +30,7 @@ const Header = () => {
             onClick={handleLogout}
             className="ml-4 bg-green-500 hover:bg-gray-800 text-green-700 font-bold py-2 px-4 rounded"
           >
-            Logout
+            Logga ut
           </button>
         </div>
       ) : isAuthLoading ? (
