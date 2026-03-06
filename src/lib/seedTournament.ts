@@ -7,7 +7,7 @@ const TOURNAMENT_DATA: TournamentType = {
   year: 2026,
   groups: [
     {
-      name: "Group A",
+      name: "Grupp A",
       teams: [
         { code: "USA", name: "United States" },
         { code: "MEX", name: "Mexico" },
@@ -60,7 +60,7 @@ const TOURNAMENT_DATA: TournamentType = {
       ],
     },
     {
-      name: "Group B",
+      name: "Grupp B",
       teams: [
         { code: "ENG", name: "England" },
         { code: "NED", name: "Netherlands" },
@@ -113,7 +113,7 @@ const TOURNAMENT_DATA: TournamentType = {
       ],
     },
     {
-      name: "Group C",
+      name: "Grupp C",
       teams: [
         { code: "ARG", name: "Argentina" },
         { code: "FRA", name: "France" },
@@ -166,7 +166,7 @@ const TOURNAMENT_DATA: TournamentType = {
       ],
     },
     {
-      name: "Group D",
+      name: "Grupp D",
       teams: [
         { code: "BRA", name: "Brazil" },
         { code: "ESP", name: "Spain" },
@@ -219,7 +219,7 @@ const TOURNAMENT_DATA: TournamentType = {
       ],
     },
     {
-      name: "Group E",
+      name: "Grupp E",
       teams: [
         { code: "GER", name: "Germany" },
         { code: "BEL", name: "Belgium" },
@@ -272,7 +272,7 @@ const TOURNAMENT_DATA: TournamentType = {
       ],
     },
     {
-      name: "Group F",
+      name: "Grupp F",
       teams: [
         { code: "ITA", name: "Italy" },
         { code: "POR", name: "Portugal" },
@@ -325,7 +325,7 @@ const TOURNAMENT_DATA: TournamentType = {
       ],
     },
     {
-      name: "Group G",
+      name: "Grupp G",
       teams: [
         { code: "JPN", name: "Japan" },
         { code: "AUS", name: "Australia" },
@@ -378,7 +378,7 @@ const TOURNAMENT_DATA: TournamentType = {
       ],
     },
     {
-      name: "Group H",
+      name: "Grupp H",
       teams: [
         { code: "MAR", name: "Morocco" },
         { code: "NOR", name: "Norway" },
@@ -431,7 +431,7 @@ const TOURNAMENT_DATA: TournamentType = {
       ],
     },
     {
-      name: "Group I",
+      name: "Grupp I",
       teams: [
         { code: "ROU", name: "Romania" },
         { code: "UKR", name: "Ukraine" },
@@ -484,7 +484,7 @@ const TOURNAMENT_DATA: TournamentType = {
       ],
     },
     {
-      name: "Group J",
+      name: "Grupp J",
       teams: [
         { code: "COL", name: "Colombia" },
         { code: "ECU", name: "Ecuador" },
@@ -537,7 +537,7 @@ const TOURNAMENT_DATA: TournamentType = {
       ],
     },
     {
-      name: "Group K",
+      name: "Grupp K",
       teams: [
         { code: "KOR", name: "South Korea" },
         { code: "TUN", name: "Tunisia" },
@@ -590,7 +590,7 @@ const TOURNAMENT_DATA: TournamentType = {
       ],
     },
     {
-      name: "Group L",
+      name: "Grupp L",
       teams: [
         { code: "CIV", name: "Côte d'Ivoire" },
         { code: "EGY", name: "Egypt" },

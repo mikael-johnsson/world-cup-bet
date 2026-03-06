@@ -38,12 +38,13 @@ export default function KnockoutSection({
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold mb-6 border-b pb-2">
-          Knockout Stage Predictions
-        </h2>
+        <h2 className="text-2xl font-bold mb-6 border-b pb-2">Slutspel</h2>
         <p className="text-gray-600 mb-4">
-          Select your predicted advancing teams round by round. Each round shows
-          the eligible teams from the previous round.
+          Välj vilka lag du tror går vidare till nästa runda i slutspelet. Börja
+          med att välja de 16 lag som går vidare från gruppspelet till
+          åttondelsfinalen. När du har valt de 16 lagen kommer du att kunna
+          välja vilka som går vidare till kvartsfinal, semifinal, final och vem
+          som vinner bronsmatchen.
         </p>
       </div>
 
@@ -59,7 +60,7 @@ export default function KnockoutSection({
       {/* Round of 16 - if 16 teams selected in R32 */}
       {knockoutPredictions?.roundOf16?.length === 16 && (
         <ProgressionRound
-          roundName="Round of 16"
+          roundName="Åttondelsfinaler"
           nextRoundFieldName="predictions.knockout.quarterfinals"
           eligibleTeams={knockoutPredictions.roundOf16}
           selectedTeams={knockoutPredictions.quarterfinals || []}
@@ -74,7 +75,7 @@ export default function KnockoutSection({
       {/* Quarterfinals - if 8 teams selected in R16 */}
       {knockoutPredictions?.quarterfinals?.length === 8 && (
         <ProgressionRound
-          roundName="Quarterfinals"
+          roundName="Kvartsfinaler"
           nextRoundFieldName="predictions.knockout.semifinals"
           eligibleTeams={knockoutPredictions.quarterfinals}
           selectedTeams={knockoutPredictions.semifinals || []}
@@ -89,7 +90,7 @@ export default function KnockoutSection({
       {/* Semifinals - if 4 teams selected in QF */}
       {knockoutPredictions?.semifinals?.length === 4 && (
         <ProgressionRound
-          roundName="Semifinals"
+          roundName="Semifinaler"
           nextRoundFieldName="predictions.knockout.final"
           eligibleTeams={knockoutPredictions.semifinals}
           selectedTeams={knockoutPredictions.final || []}
@@ -164,12 +165,10 @@ function RoundOf32Section({
 
   return (
     <div className="bg-white p-6 rounded-lg border border-gray-200">
-      <h3 className="text-xl font-semibold mb-4">
-        Round of 32 — Select 16 Teams to Advance
-      </h3>
+      <h3 className="text-xl font-semibold mb-4">Sextondelsfinal</h3>
       <p className="text-sm text-gray-600 mb-4">
-        These 32 teams qualified from the group stage. Select 16 to advance to
-        the Round of 16.
+        De här 32 lagen kvalificerade sig från gruppspelet. Välj de 16 lag du
+        tror går vidare till åttondelsfinalen.
       </p>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -193,7 +192,7 @@ function RoundOf32Section({
       </div>
 
       <p className="text-sm text-gray-600 mt-4">
-        Selected: {selectedTeams.length} / 16 teams
+        Valda: {selectedTeams.length} / 16 lag
       </p>
       <ResultComparison solution={solution} roundName="roundOf16" />
     </div>
@@ -254,7 +253,7 @@ function ProgressionRound({
   return (
     <div className="bg-white p-6 rounded-lg border border-gray-200">
       <h3 className="text-xl font-semibold mb-4">
-        {roundName} — Select {selectCount} Teams to Advance
+        {roundName} — välj {selectCount} lag att gå vidare
       </h3>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -278,7 +277,7 @@ function ProgressionRound({
       </div>
 
       <p className="text-sm text-gray-600 mt-4">
-        Selected: {selectedTeams.length} / {selectCount} teams
+        Valda: {selectedTeams.length} / {selectCount} lag
       </p>
       {solutionRoundName && (
         <ResultComparison solution={solution} roundName={solutionRoundName} />
@@ -325,7 +324,7 @@ function FinalSection({
 
   return (
     <div className="bg-white p-6 rounded-lg border border-gray-200">
-      <h3 className="text-xl font-semibold mb-4">Final — Select Champion</h3>
+      <h3 className="text-xl font-semibold mb-4">Final — välj mästare</h3>
 
       <div className="space-y-3">
         {finalists.map((teamCode) => (
@@ -348,8 +347,8 @@ function FinalSection({
       </div>
 
       <p className="text-sm text-gray-600 mt-4">
-        Champion:{" "}
-        {selectedChampion ? allTeams.get(selectedChampion) : "Not selected"}
+        Vald mästare:{" "}
+        {selectedChampion ? allTeams.get(selectedChampion) : "Inte valt"}
       </p>
       <ResultComparison solution={solution} roundName="champion" />
     </div>
@@ -402,15 +401,15 @@ function BronzeSection({
 
   return (
     <div className="bg-white p-6 rounded-lg border border-gray-200">
-      <h3 className="text-xl font-semibold mb-4">Bronze Medal — Third Place</h3>
+      <h3 className="text-xl font-semibold mb-4">Bronsmedalj — Tredje Plats</h3>
       <p className="text-sm text-gray-600 mb-4">
-        The two semifinal losers compete for the bronze medal.
+        De två semifinalförlorarna tävlar om bronsmedaljen.
       </p>
 
       {/* Bronze winner selection */}
       {bronzeligibleTeams.length === 2 && (
         <div>
-          <p className="font-semibold mb-3">Select Bronze Medal Winner:</p>
+          <p className="font-semibold mb-3">Välj bronsmedaljör:</p>
           <div className="space-y-3">
             {bronzeligibleTeams.map((teamCode: string) => (
               <label

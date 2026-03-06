@@ -54,7 +54,7 @@ export default function Leaderboard({
   if (isLoading) {
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-xl font-bold text-gray-900">Leaderboard</h2>
+        <h2 className="mb-4 text-xl font-bold text-gray-900">Highscore</h2>
         <div className="flex justify-center py-8">
           <div className="h-6 w-6 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600"></div>
         </div>
@@ -65,7 +65,7 @@ export default function Leaderboard({
   if (error) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-6">
-        <h2 className="mb-4 text-xl font-bold text-gray-900">Leaderboard</h2>
+        <h2 className="mb-4 text-xl font-bold text-gray-900">Highscore</h2>
         <div className="flex items-center gap-3 text-red-700">
           <span className="text-lg">⚠️</span>
           <p>{error}</p>
@@ -83,7 +83,7 @@ export default function Leaderboard({
   if (leaderboard.length === 0) {
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-xl font-bold text-gray-900">Leaderboard</h2>
+        <h2 className="mb-4 text-xl font-bold text-gray-900">Highscore</h2>
         <p className="text-center text-gray-500">
           No bets with scores yet. Check back after scoring is calculated.
         </p>
@@ -93,26 +93,26 @@ export default function Leaderboard({
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6">
-      <h2 className="mb-4 text-xl font-bold text-gray-900">Leaderboard</h2>
+      <h2 className="mb-4 text-xl font-bold text-gray-900">Highscore</h2>
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-gray-200 bg-gray-50">
               <th className="px-4 py-3 text-left font-semibold text-gray-700">
-                Rank
+                Plats
               </th>
               <th className="px-4 py-3 text-left font-semibold text-gray-700">
-                Username
+                Namn
               </th>
               <th className="px-4 py-3 text-right font-semibold text-gray-700">
-                Group Stage
+                Gruppspel
               </th>
               <th className="px-4 py-3 text-right font-semibold text-gray-700">
-                Knockout
+                Slutspel
               </th>
               <th className="px-4 py-3 text-right font-semibold text-gray-700">
-                Total
+                Totalt
               </th>
             </tr>
           </thead>
@@ -123,7 +123,7 @@ export default function Leaderboard({
                 className="border-b border-gray-100 hover:bg-gray-50"
               >
                 <td className="px-4 py-3 text-gray-900">
-                  <span className="inline-block w-8 rounded-full bg-blue-100 text-center font-bold text-blue-700">
+                  <span className="inline-block w-8 rounded-full bg-green-100 text-center font-bold text-green-500">
                     {entry.rank}
                   </span>
                 </td>
@@ -147,9 +147,9 @@ export default function Leaderboard({
 
       <button
         onClick={fetchLeaderboard}
-        className="mt-4 rounded bg-blue-600 px-4 py-2 text-sm text-white hover:bg-blue-700"
+        className="mt-4 rounded bg-green-500 px-4 py-2 text-sm text-white hover:bg-green-600"
       >
-        Refresh
+        Uppdatera
       </button>
     </div>
   );

@@ -50,9 +50,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
       <div className="w-full max-w-md bg-white rounded-lg shadow p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">
-          Create Account
-        </h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">Skapa konto</h1>
 
         {serverError && (
           <div className="mb-4 p-3 bg-red-50 text-red-700 rounded border border-red-200">
@@ -66,12 +64,12 @@ export default function RegisterPage() {
               htmlFor="username"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Username
+              Användarnamn
             </label>
             <input
               id="username"
               type="text"
-              placeholder="Choose a username (3-30 characters)"
+              placeholder="Välj ett användarnamn (3-30 tecken)"
               {...register("username")}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isLoading}
@@ -93,7 +91,7 @@ export default function RegisterPage() {
             <input
               id="email"
               type="email"
-              placeholder="Enter your email"
+              placeholder="Ange din email"
               {...register("email")}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isLoading}
@@ -110,12 +108,12 @@ export default function RegisterPage() {
               htmlFor="firstName"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              First Name
+              Förnamn
             </label>
             <input
               id="firstName"
               type="text"
-              placeholder="Enter your first name"
+              placeholder="Ange ditt förnamn"
               {...register("firstName")}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isLoading}
@@ -132,12 +130,12 @@ export default function RegisterPage() {
               htmlFor="lastName"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Last Name
+              Efternamn
             </label>
             <input
               id="lastName"
               type="text"
-              placeholder="Enter your last name"
+              placeholder="Ange ditt efternamn"
               {...register("lastName")}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isLoading}
@@ -154,12 +152,12 @@ export default function RegisterPage() {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Password
+              Lösenord
             </label>
             <input
               id="password"
               type="password"
-              placeholder="Create a password (6+ characters)"
+              placeholder="Skapa ett lösenord (6+ tecken)"
               {...register("password")}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isLoading}
@@ -174,19 +172,19 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 rounded-md transition"
+            className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-medium py-2 rounded-md transition"
           >
-            {isLoading ? "Creating account..." : "Sign Up"}
+            {isLoading ? "Skapar konto..." : "Skapa konto"}
           </button>
         </form>
 
         <p className="mt-4 text-center text-sm text-gray-600">
-          Already have an account?{" "}
+          Har du redan ett konto?{" "}
           <Link
             href="/login"
-            className="text-blue-600 hover:text-blue-700 font-medium"
+            className="text-green-500 hover:text-green-600 font-medium"
           >
-            Log in here
+            Logga in här
           </Link>
         </p>
       </div>

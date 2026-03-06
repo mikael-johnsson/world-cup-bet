@@ -27,13 +27,14 @@ export default async function Home() {
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-8xl mx-auto">
           <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold text-blue-900 mb-2">
-              2026 FIFA World Cup Betting
+            <h1 className="text-4xl font-bold text-green-500 mb-2">
+              Mickes VM-tips
             </h1>
-            <p className="text-gray-600">
-              Make your predictions for the tournament
+            <p className="text-green-500">
+              Tipsa på VM 2026! Deadline är innan första matchen startar. Lycka
+              till!
             </p>
           </div>
 

@@ -166,7 +166,7 @@ export default function BetForm({
     if (!isoString) return "";
     try {
       const date = new Date(isoString);
-      return date.toLocaleString("en-US", {
+      return date.toLocaleString("sv-SE", {
         year: "numeric",
         month: "long",
         day: "numeric",
@@ -229,7 +229,9 @@ export default function BetForm({
   if (isAuthLoading) {
     return (
       <div className="space-y-8 max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">World Cup Bet Form</h1>
+        <h1 className="text-3xl text-green-500 font-bold mb-8">
+          World Cup Bet Form
+        </h1>
         <div className="p-4 bg-gray-100 text-gray-700 rounded-lg">
           Loading...
         </div>
@@ -241,7 +243,9 @@ export default function BetForm({
   if (!authUser) {
     return (
       <div className="space-y-8 max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-8">World Cup Bet Form</h1>
+        <h1 className="text-3xl text-green-500 font-bold mb-8">
+          World Cup Bet Form
+        </h1>
         <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-blue-900 mb-4">
             You need to be logged in to submit bets.
@@ -271,8 +275,6 @@ export default function BetForm({
         onSubmit={methods.handleSubmit(onSubmit, onInvalid)}
         className="space-y-8 max-w-6xl mx-auto"
       >
-        <h1 className="text-3xl font-bold mb-2">World Cup Bet Form</h1>
-
         {/* Deadline Display */}
         {deadlineDate && (
           <div
@@ -284,7 +286,7 @@ export default function BetForm({
           >
             <p
               className={`text-sm font-semibold ${
-                isDeadlinePassed ? "text-red-700" : "text-blue-700"
+                isDeadlinePassed ? "text-red-700" : "text-green-500"
               }`}
             >
               Deadline: {formatDeadlineDisplay(deadlineDate)}
@@ -316,17 +318,17 @@ export default function BetForm({
             disabled={isSubmitting || !isGroupStageFilled || isDeadlinePassed}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold"
           >
-            {isSubmitting ? "Submitting..." : "Submit Bet"}
+            {isSubmitting ? "Skickar..." : "Skicka in tips"}
           </button>
         </div>
 
         {/* Deadline Passed Message */}
         {isDeadlinePassed && (
           <div className="p-4 rounded-lg bg-red-100 text-red-800 border border-red-300">
-            <p className="font-semibold">Betting period has ended</p>
-            <p className="text-sm mt-1">
-              No new bets can be submitted after the tournament start date.
+            <p className="font-semibold">
+              Deadline för att lämna in tips har passerat.
             </p>
+            <p className="text-sm mt-1">Inga nya tips kan tas emot.</p>
           </div>
         )}
 

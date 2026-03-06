@@ -50,7 +50,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
       <div className="w-full max-w-md bg-white rounded-lg shadow p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Login</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">Logga in</h1>
 
         {serverError && (
           <div className="mb-4 p-3 bg-red-50 text-red-700 rounded border border-red-200">
@@ -64,12 +64,12 @@ export default function LoginPage() {
               htmlFor="username"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Username
+              Användarnamn
             </label>
             <input
               id="username"
               type="text"
-              placeholder="Enter your username"
+              placeholder="Välj ditt användarnamn"
               {...register("username")}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isLoading}
@@ -86,12 +86,12 @@ export default function LoginPage() {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Password
+              Lösenord
             </label>
             <input
               id="password"
               type="password"
-              placeholder="Enter your password"
+              placeholder="Ange ditt lösenord"
               {...register("password")}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isLoading}
@@ -106,19 +106,19 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-medium py-2 rounded-md transition"
+            className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white font-medium py-2 rounded-md transition"
           >
-            {isLoading ? "Logging in..." : "Login"}
+            {isLoading ? "Loggar in..." : "Logga in"}
           </button>
         </form>
 
         <p className="mt-4 text-center text-sm text-gray-600">
-          Don't have an account?{" "}
+          Har du inget konto?{" "}
           <Link
             href="/register"
-            className="text-blue-600 hover:text-blue-700 font-medium"
+            className="text-green-500 hover:text-green-700 font-medium"
           >
-            Sign up here
+            Skapa konto här
           </Link>
         </p>
       </div>

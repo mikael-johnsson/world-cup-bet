@@ -55,11 +55,12 @@ export default function GroupStageSection({
   return (
     <div className="space-y-8">
       <div>
-        <h2 className="text-2xl font-bold mb-6 border-b pb-2">
-          Group Stage Predictions
-        </h2>
+        <h2 className="text-2xl font-bold mb-6 border-b pb-2">Gruppspel</h2>
         <p className="text-gray-600 mb-4">
-          Enter your predicted scores for all group stage matches.
+          Fyll i slutresultaten för varje match i gruppspelet. Ställningen i
+          varje grupp och de bästa tredjeplacerade lagen uppdateras dynamiskt.
+          Deadline är innan första matchen startar, så du kan ändra ditt tips
+          fram till dess.
         </p>
       </div>
 
@@ -98,7 +99,7 @@ export default function GroupStageSection({
 
       {/* The third place table */}
       <div className="bg-white p-6 rounded-lg border border-gray-200">
-        <h3 className="text-xl font-semibold mb-4">Best Third-Placed Teams</h3>
+        <h3 className="text-xl font-semibold mb-4">Bästa treor</h3>
         <ThirdPlaceTable standings={thirdPlaceStandings} />
       </div>
     </div>
@@ -119,11 +120,11 @@ function StandingsTable({ standings }: { standings: TeamStanding[] }) {
           <tr>
             <th className="px-2 py-2 text-left">Pos</th>
             <th className="px-2 py-2 text-left">Team</th>
-            <th className="px-2 py-2 text-right">Pld</th>
-            <th className="px-2 py-2 text-right">GF</th>
-            <th className="px-2 py-2 text-right">GA</th>
-            <th className="px-2 py-2 text-right">GD</th>
-            <th className="px-2 py-2 text-right">Pts</th>
+            <th className="px-2 py-2 text-right">S</th>
+            <th className="px-2 py-2 text-right">GM</th>
+            <th className="px-2 py-2 text-right">IM</th>
+            <th className="px-2 py-2 text-right">MS</th>
+            <th className="px-2 py-2 text-right">P</th>
           </tr>
         </thead>
         <tbody>
@@ -164,12 +165,12 @@ function ThirdPlaceTable({ standings }: { standings: ThirdPlaceStanding[] }) {
           <tr>
             <th className="px-2 py-2 text-left">Pos</th>
             <th className="px-2 py-2 text-left">Team</th>
-            <th className="px-2 py-2 text-left">Group</th>
-            <th className="px-2 py-2 text-right">Pld</th>
-            <th className="px-2 py-2 text-right">GF</th>
-            <th className="px-2 py-2 text-right">GA</th>
-            <th className="px-2 py-2 text-right">GD</th>
-            <th className="px-2 py-2 text-right">Pts</th>
+            <th className="px-2 py-2 text-left">Grupp</th>
+            <th className="px-2 py-2 text-right">S</th>
+            <th className="px-2 py-2 text-right">GM</th>
+            <th className="px-2 py-2 text-right">IM</th>
+            <th className="px-2 py-2 text-right">MS</th>
+            <th className="px-2 py-2 text-right">P</th>
           </tr>
         </thead>
         <tbody>
@@ -235,7 +236,7 @@ function MatchInput({
       <div className="flex items-center justify-between gap-4 p-3 bg-gray-50 rounded">
         <div className="flex-1">
           <p className="text-sm font-semibold">
-            {fixture.homeTeam.name} vs {fixture.awayTeam.name}
+            {fixture.homeTeam.name} - {fixture.awayTeam.name}
           </p>
           <p className="text-xs text-gray-500">
             {new Date(fixture.matchDate).toLocaleString()}

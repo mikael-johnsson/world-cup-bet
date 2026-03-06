@@ -7,7 +7,6 @@ interface ResultComparisonProps {
   matchId?: string;
   solution?: any;
   groupName?: string; // For group stage matches
-  teamCode?: string; // For knockout stage team predictions
   roundName?: string; // e.g., "roundOf16", "champion", "bronze"
 }
 
@@ -15,7 +14,6 @@ export default function ResultComparison({
   matchId,
   solution,
   groupName,
-  teamCode,
   roundName,
 }: ResultComparisonProps) {
   if (!solution?.predictions) {
@@ -41,14 +39,14 @@ export default function ResultComparison({
     }
 
     return (
-      <div className="flex items-center gap-2 text-sm">
-        <span className="text-gray-600 font-medium">Actual:</span>
+      <div className="flex items-center gap-2 text-sm mr-3">
+        <span className="text-gray-600 font-medium">Resultat:</span>
         <div className="flex items-center gap-2 bg-green-100 px-2 py-1 rounded">
-          <span className="font-semibold text-green-800">
+          <span className="font-semibold text-green-500">
             {matchResult.predictedHomeGoals}
           </span>
-          <span className="text-green-700">-</span>
-          <span className="font-semibold text-green-800">
+          <span className="text-green-500">-</span>
+          <span className="font-semibold text-green-500">
             {matchResult.predictedAwayGoals}
           </span>
         </div>
@@ -64,8 +62,8 @@ export default function ResultComparison({
     if (typeof roundResult === "string") {
       return (
         <div className="text-sm mt-2">
-          <span className="text-gray-600 font-medium">Actual: </span>
-          <span className="bg-green-100 text-green-800 px-2 py-1 rounded font-semibold">
+          <span className="text-gray-600 font-medium">Resultat: </span>
+          <span className="bg-green-100 text-green-500 px-2 py-1 rounded font-semibold">
             {roundResult}
           </span>
         </div>

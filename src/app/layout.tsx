@@ -4,9 +4,9 @@ import Header from "@/components/Header";
 import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata: Metadata = {
-  title: "World Cup Bet",
+  title: "Mickes VM-tips 2026",
   description:
-    "A world cup betting app built with Next.js, React Hook Form, and MongoDB",
+    "En betting-app för fotbolls-VM 2026 byggd med Next.js, React Hook Form, och MongoDB",
 };
 
 export default function RootLayout({
@@ -15,7 +15,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="sv">
       <body>
         <AuthProvider>
           <Header />
