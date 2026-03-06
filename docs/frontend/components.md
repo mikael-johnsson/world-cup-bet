@@ -88,7 +88,16 @@ Receives the tournament structure from `page.tsx`.
 - Calls `refreshAuth()` via effect to sync latest auth state
 - Shows login/register prompt if not authenticated
 
-6. **Form Submission**
+6. **Betting Deadline Display and Enforcement**
+
+- Fetches deadline from `GET /api/config/betting-deadline` on mount
+- Displays deadline below form title in 24-hour Swedish format (e.g., "June 11, 2026, 21:00")
+- Shows deadline in blue box before deadline, red box after deadline passes
+- Disables submit button when deadline has passed (button grayed out, `disabled={isDeadlinePassed}`)
+- Shows "Betting period has ended" message below form after deadline
+- Backend also prevents bet submission after deadline with 400 error (server-side enforcement)
+
+7. **Form Submission**
    - Sends POST to `/api/bets` with full predictions
    - Updates existing bet or creates new one (per user + tournament)
    - Shows success/error messages

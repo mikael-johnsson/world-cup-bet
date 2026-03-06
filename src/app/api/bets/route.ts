@@ -4,6 +4,7 @@ import { Bet } from "@/models/Bet";
 import { Tournament } from "@/models/Tournament";
 import { betSchema } from "@/lib/validationSchemas";
 import { requireUser } from "@/lib/authGuards";
+import { isAfterBettingDeadline } from "@/lib/deadlineUtils";
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,6 +29,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Tournament not found" },
         { status: 404 },
+      );
+    }
+
+    // Check if betting deadline has passed
+    if (isAfterBettingDeadline()) {
+      return NextResponse.json(
+        { error: "Betting period has ended" },
+        { status: 400 },
       );
     }
 

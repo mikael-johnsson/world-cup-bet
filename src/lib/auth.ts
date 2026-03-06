@@ -69,7 +69,7 @@ export function getAuthCookieName(): string {
  */
 export function getAuthCookieOptions() {
   return {
-    // httpOnly: true,
+    httpOnly: true,
     sameSite: "lax" as const,
     path: "/",
     maxAge: 60 * 60 * 24 * 7,

@@ -27,10 +27,21 @@ export default function BetForm({
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const [deadlineDate, setDeadlineDate] = useState<string | null>(null);
+  const [isDeadlinePassed, setIsDeadlinePassed] = useState(false);
 
-  useEffect(() => {
-    refreshAuth();
-  }, []);
+  const fetchDeadline = async () => {
+    try {
+      const response = await fetch("/api/config/betting-deadline");
+      if (response.ok) {
+        const data = await response.json();
+        setDeadlineDate(data.deadline);
+        setIsDeadlinePassed(data.isPassed);
+      }
+    } catch (error) {
+      console.error("Error fetching deadline config:", error);
+    }
+  };
 
   const fetchExistingBet = async () => {
     setIsLoadingBet(true);
@@ -50,6 +61,11 @@ export default function BetForm({
       setIsLoadingBet(false);
     }
   };
+
+  useEffect(() => {
+    refreshAuth();
+    fetchDeadline();
+  }, []);
 
   useEffect(() => {
     if (authUser && !isAuthLoading) {
@@ -125,6 +141,25 @@ export default function BetForm({
 
     return map;
   }, [tournamentData.groups]);
+
+  // Format deadline for display
+  const formatDeadlineDisplay = (isoString: string | null): string => {
+    if (!isoString) return "";
+    try {
+      const date = new Date(isoString);
+      return date.toLocaleString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+        timeZone: "Europe/Stockholm",
+      });
+    } catch {
+      return "";
+    }
+  };
 
   // Check if button is invalid
   const onInvalid = (errors: any) => {
@@ -217,7 +252,26 @@ export default function BetForm({
         onSubmit={methods.handleSubmit(onSubmit, onInvalid)}
         className="space-y-8 max-w-6xl mx-auto"
       >
-        <h1 className="text-3xl font-bold mb-8">World Cup Bet Form</h1>
+        <h1 className="text-3xl font-bold mb-2">World Cup Bet Form</h1>
+
+        {/* Deadline Display */}
+        {deadlineDate && (
+          <div
+            className={`mb-6 p-3 rounded-lg ${
+              isDeadlinePassed
+                ? "bg-red-50 border border-red-200"
+                : "bg-blue-50 border border-blue-200"
+            }`}
+          >
+            <p
+              className={`text-sm font-semibold ${
+                isDeadlinePassed ? "text-red-700" : "text-blue-700"
+              }`}
+            >
+              Deadline: {formatDeadlineDisplay(deadlineDate)}
+            </p>
+          </div>
+        )}
 
         {/* Group Stage Section */}
         <GroupStageSection groups={tournamentData.groups} />
@@ -231,12 +285,22 @@ export default function BetForm({
         <div className="mt-8 flex gap-4">
           <button
             type="submit"
-            disabled={isSubmitting || !isGroupStageFilled}
+            disabled={isSubmitting || !isGroupStageFilled || isDeadlinePassed}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold"
           >
             {isSubmitting ? "Submitting..." : "Submit Bet"}
           </button>
         </div>
+
+        {/* Deadline Passed Message */}
+        {isDeadlinePassed && (
+          <div className="p-4 rounded-lg bg-red-100 text-red-800 border border-red-300">
+            <p className="font-semibold">Betting period has ended</p>
+            <p className="text-sm mt-1">
+              No new bets can be submitted after the tournament start date.
+            </p>
+          </div>
+        )}
 
         {/* Messages */}
         {submitMessage && (

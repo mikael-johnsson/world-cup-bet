@@ -505,6 +505,45 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 
 ---
 
+### 10. GET /api/config/betting-deadline
+
+**Purpose:** Retrieve betting deadline configuration and status.
+
+**Authentication:** Not required (public endpoint)
+
+**Query Parameters:** None
+
+**Response (Success - 200)**
+
+```json
+{
+  "deadline": "2026-06-11T21:00:00.000Z",
+  "isPassed": false
+}
+```
+
+**Response (Error - 500 Server Error)**
+
+```json
+{
+  "error": "Failed to retrieve deadline configuration"
+}
+```
+
+**Key Details**
+
+- Returns betting deadline as ISO 8601 string
+- `isPassed` boolean indicates if current time is after deadline
+- Used by frontend to determine button state and display deadline to users
+- Environment variable: `BETTING_DEADLINE` (format: `2026-06-11T21:00:00+02:00`)
+- No authentication required (public information)
+
+**Code Location**
+
+`src/app/api/config/betting-deadline/route.ts`
+
+---
+
 ## Validation Schemas
 
 All requests are validated using Zod schemas in `src/lib/validationSchemas.ts`:
