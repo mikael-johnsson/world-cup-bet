@@ -13,17 +13,20 @@ import ResultComparison from "./ResultComparison";
 interface GroupStageSectionProps {
   groups: any[];
   solution?: any;
+  isDeadlinePassed?: boolean;
 }
 /**
  *
  * @param groups - Array of group objects, each containing teams and fixtures
  * @param solution - Optional solution object containing actual results
+ * @param isDeadlinePassed - Whether betting deadline has passed (disables inputs)
  * @returns A full page with inputs for group stage predictions and dynamic
  * standings tables that update as the user enters predictions.
  */
 export default function GroupStageSection({
   groups,
   solution,
+  isDeadlinePassed,
 }: GroupStageSectionProps) {
   const { control } = useFormContext<BetInput>();
   const { fields: groupFields } = useFieldArray({
@@ -82,6 +85,7 @@ export default function GroupStageSection({
                     fixture={fixture}
                     solution={solution}
                     groupName={group.name}
+                    isDeadlinePassed={isDeadlinePassed}
                   />
                 ))}
               </div>
@@ -200,6 +204,7 @@ interface MatchInputProps {
   fixture: any;
   solution?: any;
   groupName: string;
+  isDeadlinePassed?: boolean;
 }
 
 /**
@@ -209,6 +214,7 @@ interface MatchInputProps {
  * @param fixture - The fixture object containing home and away team info and match date
  * @param solution - Optional solution object containing actual results
  * @param groupName - Name of the group (e.g., "Group A")
+ * @param isDeadlinePassed - Whether betting deadline has passed (disables inputs)
  * @returns A styled input component for predicting match results with actual results displayed when available
  */
 function MatchInput({
@@ -217,6 +223,7 @@ function MatchInput({
   fixture,
   solution,
   groupName,
+  isDeadlinePassed,
 }: MatchInputProps) {
   const { register } = useFormContext<BetInput>();
 
@@ -240,13 +247,14 @@ function MatchInput({
             type="number"
             min="0"
             max="10"
+            disabled={isDeadlinePassed}
             {...register(
               `predictions.groupStage.${groupIdx}.matches.${fixtureIdx}.predictedHomeGoals`,
               {
                 valueAsNumber: true,
               },
             )}
-            className="w-12 px-2 py-1 border border-gray-300 rounded text-center"
+            className="w-12 px-2 py-1 border border-gray-300 rounded text-center disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-200"
             placeholder="0"
           />
           <span className="font-bold text-gray-500">-</span>
@@ -254,13 +262,14 @@ function MatchInput({
             type="number"
             min="0"
             max="10"
+            disabled={isDeadlinePassed}
             {...register(
               `predictions.groupStage.${groupIdx}.matches.${fixtureIdx}.predictedAwayGoals`,
               {
                 valueAsNumber: true,
               },
             )}
-            className="w-12 px-2 py-1 border border-gray-300 rounded text-center"
+            className="w-12 px-2 py-1 border border-gray-300 rounded text-center disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-200"
             placeholder="0"
           />
         </div>

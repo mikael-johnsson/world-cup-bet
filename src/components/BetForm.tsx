@@ -293,7 +293,11 @@ export default function BetForm({
         )}
 
         {/* Group Stage Section */}
-        <GroupStageSection groups={tournamentData.groups} solution={solution} />
+        <GroupStageSection
+          groups={tournamentData.groups}
+          solution={solution}
+          isDeadlinePassed={isDeadlinePassed}
+        />
 
         {/* Knockout Section - only show if group stage is filled */}
         {isGroupStageFilled && advancingTeams.length === 32 && (
@@ -301,6 +305,7 @@ export default function BetForm({
             advancingTeams={advancingTeams}
             allTeams={teamMap}
             solution={solution}
+            isDeadlinePassed={isDeadlinePassed}
           />
         )}
 

@@ -8,6 +8,7 @@ interface KnockoutSectionProps {
   advancingTeams: string[]; // 32 teams that advanced from groups
   allTeams: Map<string, string>; // team code -> team name mapping
   solution?: any; // Optional solution data to display actual results
+  isDeadlinePassed?: boolean; // Whether betting deadline has passed (disables inputs)
 }
 
 /**
@@ -24,6 +25,7 @@ export default function KnockoutSection({
   advancingTeams,
   allTeams,
   solution,
+  isDeadlinePassed,
 }: KnockoutSectionProps) {
   const { control } = useFormContext<BetInput>();
 
@@ -51,6 +53,7 @@ export default function KnockoutSection({
         allTeams={allTeams}
         selectedTeams={knockoutPredictions?.roundOf16 || []}
         solution={solution}
+        isDeadlinePassed={isDeadlinePassed}
       />
 
       {/* Round of 16 - if 16 teams selected in R32 */}
@@ -64,6 +67,7 @@ export default function KnockoutSection({
           allTeams={allTeams}
           solution={solution}
           solutionRoundName="quarterfinals"
+          isDeadlinePassed={isDeadlinePassed}
         />
       )}
 
@@ -78,6 +82,7 @@ export default function KnockoutSection({
           allTeams={allTeams}
           solution={solution}
           solutionRoundName="semifinals"
+          isDeadlinePassed={isDeadlinePassed}
         />
       )}
 
@@ -92,6 +97,7 @@ export default function KnockoutSection({
           allTeams={allTeams}
           solution={solution}
           solutionRoundName="final"
+          isDeadlinePassed={isDeadlinePassed}
         />
       )}
 
@@ -102,6 +108,7 @@ export default function KnockoutSection({
             finalists={knockoutPredictions.final}
             allTeams={allTeams}
             selectedChampion={knockoutPredictions.champion}
+            isDeadlinePassed={isDeadlinePassed}
             solution={solution}
           />
           <BronzeSection
@@ -109,6 +116,7 @@ export default function KnockoutSection({
             selectedBronzeFinalists={knockoutPredictions.bronze}
             allTeams={allTeams}
             knockoutPredictions={knockoutPredictions}
+            isDeadlinePassed={isDeadlinePassed}
             solution={solution}
           />
         </>
@@ -126,6 +134,7 @@ interface RoundOf32SectionProps {
   allTeams: Map<string, string>;
   selectedTeams: string[];
   solution?: any;
+  isDeadlinePassed?: boolean;
 }
 
 function RoundOf32Section({
@@ -133,6 +142,7 @@ function RoundOf32Section({
   allTeams,
   selectedTeams,
   solution,
+  isDeadlinePassed,
 }: RoundOf32SectionProps) {
   const { register } = useFormContext<BetInput>();
 
@@ -166,13 +176,14 @@ function RoundOf32Section({
         {advancingTeams.map((teamCode) => (
           <label
             key={teamCode}
-            className={`flex items-center gap-2 p-3 border rounded cursor-pointer ${getTeamBgColor(teamCode)}`}
+            className={`flex items-center gap-2 p-3 border rounded cursor-pointer ${getTeamBgColor(teamCode)} ${isDeadlinePassed ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <input
               type="checkbox"
               value={teamCode}
+              disabled={isDeadlinePassed}
               {...register("predictions.knockout.roundOf16")}
-              className="w-4 h-4 rounded"
+              className="w-4 h-4 rounded disabled:cursor-not-allowed"
             />
             <span className="font-semibold">
               {allTeams.get(teamCode) || teamCode}
@@ -205,6 +216,7 @@ interface ProgressionRoundProps {
   allTeams: Map<string, string>;
   solution?: any;
   solutionRoundName?: string;
+  isDeadlinePassed?: boolean;
 }
 
 function ProgressionRound({
@@ -216,6 +228,7 @@ function ProgressionRound({
   allTeams,
   solution,
   solutionRoundName,
+  isDeadlinePassed,
 }: ProgressionRoundProps) {
   const { register } = useFormContext<BetInput>();
 
@@ -248,13 +261,14 @@ function ProgressionRound({
         {eligibleTeams.map((teamCode) => (
           <label
             key={teamCode}
-            className={`flex items-center gap-2 p-3 border rounded cursor-pointer ${getTeamBgColor(teamCode)}`}
+            className={`flex items-center gap-2 p-3 border rounded cursor-pointer ${getTeamBgColor(teamCode)} ${isDeadlinePassed ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <input
               type="checkbox"
               value={teamCode}
+              disabled={isDeadlinePassed}
               {...register(nextRoundFieldName)}
-              className="w-4 h-4 rounded"
+              className="w-4 h-4 rounded disabled:cursor-not-allowed"
             />
             <span className="font-semibold">
               {allTeams.get(teamCode) || teamCode}
@@ -281,6 +295,7 @@ interface FinalSectionProps {
   allTeams: Map<string, string>;
   selectedChampion: string;
   solution?: any;
+  isDeadlinePassed?: boolean;
 }
 
 function FinalSection({
@@ -288,6 +303,7 @@ function FinalSection({
   allTeams,
   selectedChampion,
   solution,
+  isDeadlinePassed,
 }: FinalSectionProps) {
   const { register } = useFormContext<BetInput>();
 
@@ -315,13 +331,14 @@ function FinalSection({
         {finalists.map((teamCode) => (
           <label
             key={teamCode}
-            className={`flex items-center gap-3 p-4 border rounded cursor-pointer ${getTeamBgColor(teamCode)}`}
+            className={`flex items-center gap-3 p-4 border rounded cursor-pointer ${getTeamBgColor(teamCode)} ${isDeadlinePassed ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <input
               type="radio"
               value={teamCode}
+              disabled={isDeadlinePassed}
               {...register("predictions.knockout.champion")}
-              className="w-4 h-4"
+              className="w-4 h-4 disabled:cursor-not-allowed"
             />
             <span className="font-semibold text-lg">
               {allTeams.get(teamCode) || teamCode}
@@ -348,6 +365,7 @@ interface BronzeSectionProps {
   allTeams: Map<string, string>;
   knockoutPredictions: any;
   solution?: any;
+  isDeadlinePassed?: boolean;
 }
 
 function BronzeSection({
@@ -356,6 +374,7 @@ function BronzeSection({
   allTeams,
   knockoutPredictions,
   solution,
+  isDeadlinePassed,
 }: BronzeSectionProps) {
   const { register } = useFormContext<BetInput>();
 
@@ -396,13 +415,14 @@ function BronzeSection({
             {bronzeligibleTeams.map((teamCode: string) => (
               <label
                 key={teamCode}
-                className={`flex items-center gap-3 p-4 border rounded cursor-pointer ${getTeamBgColor(teamCode)}`}
+                className={`flex items-center gap-3 p-4 border rounded cursor-pointer ${getTeamBgColor(teamCode)} ${isDeadlinePassed ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 <input
                   type="radio"
                   value={teamCode}
+                  disabled={isDeadlinePassed}
                   {...register("predictions.knockout.bronze")}
-                  className="w-4 h-4"
+                  className="w-4 h-4 disabled:cursor-not-allowed"
                 />
                 <span className="font-semibold text-lg">
                   {allTeams.get(teamCode) || teamCode}
