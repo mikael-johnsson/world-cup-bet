@@ -74,7 +74,7 @@ export default function Leaderboard({
           onClick={fetchLeaderboard}
           className="mt-4 rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
         >
-          Retry
+          Försök igen
         </button>
       </div>
     );
@@ -84,9 +84,7 @@ export default function Leaderboard({
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-6">
         <h2 className="mb-4 text-xl font-bold text-gray-900">Highscore</h2>
-        <p className="text-center text-gray-500">
-          No bets with scores yet. Check back after scoring is calculated.
-        </p>
+        <p className="text-center text-gray-500">Inga tips med poäng än.</p>
       </div>
     );
   }
