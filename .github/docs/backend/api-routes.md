@@ -564,7 +564,37 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 
 ---
 
-### 10. PUT /api/user/group
+### 10. GET /api/user/group
+
+**Purpose:** Retrieve the authenticated user's current group.
+
+**Authentication:** Required (HttpOnly cookie)
+
+**Query Parameters:** None
+
+**Response (Success - 200)**
+
+```json
+{
+  "group": "friends-2026"
+}
+```
+
+**Response (Error - 401 Not Authenticated)**
+
+```json
+{
+  "error": "Authentication required"
+}
+```
+
+**Code Location**
+
+`src/app/api/user/group/route.ts`
+
+---
+
+### 11. PUT /api/user/group
 
 **Purpose:** Update the authenticated user's group.
 
@@ -609,7 +639,7 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 
 ---
 
-### 11. GET /api/groups
+### 12. GET /api/groups
 
 **Purpose:** Retrieve all unique groups currently used by users.
 
@@ -637,7 +667,7 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 
 ---
 
-### 12. GET /api/config/betting-deadline
+### 13. GET /api/config/betting-deadline
 
 **Purpose:** Retrieve betting deadline configuration and status.
 
@@ -676,7 +706,7 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 
 ---
 
-### 13. GET /api/solutions
+### 14. GET /api/solutions
 
 **Purpose:** Retrieve the current solution (actual tournament results) for a tournament.
 

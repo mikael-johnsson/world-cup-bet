@@ -6,6 +6,37 @@ import { userGroupSchema } from "@/lib/validationSchemas";
 import { User } from "@/models/User";
 
 /**
+ * GET /api/user/group
+ *
+ * Returns the authenticated user's current group.
+ */
+export async function GET(request: NextRequest) {
+  try {
+    const auth = requireUser(request);
+    if (!auth.isAuthenticated) {
+      return auth.response;
+    }
+
+    await connectDB();
+
+    const user = await User.findById(auth.payload!.userId)
+      .select("group")
+      .lean();
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ group: user.group }, { status: 200 });
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Internal server error";
+
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+/**
  * PUT /api/user/group
  *
  * Updates the authenticated user's group.

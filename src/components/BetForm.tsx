@@ -206,12 +206,12 @@ export default function BetForm({
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "Failed to submit bet");
+        throw new Error(result.error || "Misslyckades att skicka in tips");
       }
 
       setSubmitMessage({
         type: "success",
-        text: `${result.message} (ID: ${result.betId})`,
+        text: `${result.message}`,
       });
 
       // Reset form on successful submission (optional)
@@ -219,7 +219,7 @@ export default function BetForm({
     } catch (error: any) {
       setSubmitMessage({
         type: "error",
-        text: error.message || "An error occurred",
+        text: error.message || "Oväntat fel",
       });
     } finally {
       setIsSubmitting(false);

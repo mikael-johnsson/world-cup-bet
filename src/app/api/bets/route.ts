@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     const tournament = await Tournament.findById(validatedData.tournamentId);
     if (!tournament) {
       return NextResponse.json(
-        { error: "Tournament not found" },
+        { error: "Hittade inte turneringen" },
         { status: 404 },
       );
     }
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     // Check if betting deadline has passed
     if (isAfterBettingDeadline()) {
       return NextResponse.json(
-        { error: "Betting period has ended" },
+        { error: "Deadline för att lämna in tips har passerat." },
         { status: 400 },
       );
     }
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         betId: bet._id,
-        message: "Bet updated successfully",
+        message: "Ditt tips har uppdaterats!",
       });
     } else {
       // Create new bet
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
         {
           success: true,
           betId: bet._id,
-          message: "Bet created successfully",
+          message: "Ditt tips har skickats in!",
         },
         { status: 201 },
       );
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
 
     if (error.name === "ZodError") {
       return NextResponse.json(
-        { error: "Validation error", details: error.errors },
+        { error: "Valideringsfel", details: error.errors },
         { status: 400 },
       );
     }
@@ -122,7 +122,10 @@ export async function GET(request: NextRequest) {
     const bet = await Bet.findOne({ userId, tournamentId });
 
     if (!bet) {
-      return NextResponse.json({ error: "Bet not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Ditt tips hittades inte" },
+        { status: 404 },
+      );
     }
 
     return NextResponse.json(bet);

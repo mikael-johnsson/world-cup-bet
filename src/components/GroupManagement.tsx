@@ -31,14 +31,6 @@ export default function GroupManagement({
     setSelectedGroup(initialGroup);
   }, [initialGroup]);
 
-  useEffect(() => {
-    if (!authUser) {
-      return;
-    }
-
-    fetchGroups();
-  }, [authUser]);
-
   const selectOptions = useMemo(() => {
     // Ensure current group remains selectable even if no one else currently uses it.
     const merged = new Set([...availableGroups, currentGroup]);
@@ -63,6 +55,41 @@ export default function GroupManagement({
     }
   };
 
+  const fetchCurrentUserGroup = async () => {
+    try {
+      const response = await fetch("/api/user/group");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || "Misslyckades att hämta användarens grupp",
+        );
+      }
+
+      const userGroup =
+        typeof data.group === "string" && data.group.trim().length > 0
+          ? data.group
+          : "default";
+
+      setCurrentGroup(userGroup);
+      setSelectedGroup(userGroup);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Okänt fel");
+    }
+  };
+
+  useEffect(() => {
+    if (!authUser) {
+      return;
+    }
+
+    const loadGroupData = async () => {
+      await Promise.all([fetchGroups(), fetchCurrentUserGroup()]);
+    };
+
+    loadGroupData();
+  }, [authUser]);
+
   const updateGroup = async (group: string) => {
     try {
       setIsUpdating(true);
@@ -85,7 +112,7 @@ export default function GroupManagement({
       setCurrentGroup(updatedGroup);
       setSelectedGroup(updatedGroup);
       setCreateInput("");
-      setSuccessMessage("Grupp skapad");
+      setSuccessMessage("Grupp vald");
       onGroupChanged?.(updatedGroup);
 
       await fetchGroups();
