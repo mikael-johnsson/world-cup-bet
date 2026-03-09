@@ -1,8 +1,46 @@
 "use client";
 
-import { useFormContext, useWatch, useFieldArray } from "react-hook-form";
+import { useFormContext, useWatch } from "react-hook-form";
 import { BetInput } from "@/lib/validationSchemas";
 import ResultComparison from "./ResultComparison";
+
+type KnockoutSolution = {
+  predictions?: {
+    knockout?: {
+      [key: string]: unknown;
+      champion?: unknown;
+      bronze?: unknown;
+    };
+  };
+};
+
+function hasNonEmptyTeamArray(value: unknown): value is string[] {
+  return (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    value.every((team) => typeof team === "string")
+  );
+}
+
+function hasNonEmptyTeamCode(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function getKnockoutRoundTeams(
+  solution: KnockoutSolution | undefined,
+  roundName: string,
+): string[] {
+  const value = solution?.predictions?.knockout?.[roundName];
+  return hasNonEmptyTeamArray(value) ? value : [];
+}
+
+function getKnockoutWinner(
+  solution: KnockoutSolution | undefined,
+  fieldName: "champion" | "bronze",
+): string | null {
+  const value = solution?.predictions?.knockout?.[fieldName];
+  return hasNonEmptyTeamCode(value) ? value : null;
+}
 
 interface KnockoutSectionProps {
   advancingTeams: string[]; // 32 teams that advanced from groups
@@ -146,12 +184,18 @@ function RoundOf32Section({
   isDeadlinePassed,
 }: RoundOf32SectionProps) {
   const { register } = useFormContext<BetInput>();
+  const solutionRoundOf16 = solution?.predictions?.knockout?.roundOf16;
+  const canCompareRoundOf16 = hasNonEmptyTeamArray(solutionRoundOf16);
 
   // Get actual teams that advanced from solution
-  const actualAdvancedTeams = solution?.predictions?.knockout?.roundOf16 || [];
+  const actualAdvancedTeams = getKnockoutRoundTeams(solution, "roundOf16");
 
   // Helper to determine background color for each team
   const getTeamBgColor = (teamCode: string) => {
+    if (!canCompareRoundOf16) {
+      return "bg-white hover:bg-blue-50";
+    }
+
     const actuallyAdvanced = actualAdvancedTeams.includes(teamCode);
     const userSelected = selectedTeams.includes(teamCode);
 
@@ -194,7 +238,9 @@ function RoundOf32Section({
       <p className="text-sm text-gray-600 mt-4">
         Valda: {selectedTeams.length} / 16 lag
       </p>
-      <ResultComparison solution={solution} roundName="roundOf16" />
+      {canCompareRoundOf16 && (
+        <ResultComparison solution={solution} roundName="roundOf16" />
+      )}
     </div>
   );
 }
@@ -230,15 +276,22 @@ function ProgressionRound({
   isDeadlinePassed,
 }: ProgressionRoundProps) {
   const { register } = useFormContext<BetInput>();
+  const solutionRoundData = solutionRoundName
+    ? solution?.predictions?.knockout?.[solutionRoundName]
+    : undefined;
+  const canCompareRound = hasNonEmptyTeamArray(solutionRoundData);
 
   // Get actual teams that advanced from solution
-  const actualAdvancedTeams =
-    solutionRoundName && solution?.predictions?.knockout?.[solutionRoundName]
-      ? solution.predictions.knockout[solutionRoundName]
-      : [];
+  const actualAdvancedTeams = solutionRoundName
+    ? getKnockoutRoundTeams(solution, solutionRoundName)
+    : [];
 
   // Helper to determine background color for each team
   const getTeamBgColor = (teamCode: string) => {
+    if (!canCompareRound) {
+      return "bg-white hover:bg-blue-50";
+    }
+
     const actuallyAdvanced = actualAdvancedTeams.includes(teamCode);
     const userSelected = selectedTeams.includes(teamCode);
 
@@ -279,7 +332,7 @@ function ProgressionRound({
       <p className="text-sm text-gray-600 mt-4">
         Valda: {selectedTeams.length} / {selectCount} lag
       </p>
-      {solutionRoundName && (
+      {solutionRoundName && canCompareRound && (
         <ResultComparison solution={solution} roundName={solutionRoundName} />
       )}
     </div>
@@ -305,12 +358,18 @@ function FinalSection({
   isDeadlinePassed,
 }: FinalSectionProps) {
   const { register } = useFormContext<BetInput>();
+  const solutionChampion = solution?.predictions?.knockout?.champion;
+  const canCompareChampion = hasNonEmptyTeamCode(solutionChampion);
 
   // Get actual champion from solution
-  const actualChampion = solution?.predictions?.knockout?.champion || null;
+  const actualChampion = getKnockoutWinner(solution, "champion");
 
   // Helper to determine background color for each team
   const getTeamBgColor = (teamCode: string) => {
+    if (!canCompareChampion) {
+      return "bg-white hover:bg-blue-50";
+    }
+
     const isActualChampion = actualChampion === teamCode;
     const isUserSelected = selectedChampion === teamCode;
 
@@ -350,7 +409,9 @@ function FinalSection({
         Vald mästare:{" "}
         {selectedChampion ? allTeams.get(selectedChampion) : "Inte valt"}
       </p>
-      <ResultComparison solution={solution} roundName="champion" />
+      {canCompareChampion && (
+        <ResultComparison solution={solution} roundName="champion" />
+      )}
     </div>
   );
 }
@@ -376,6 +437,8 @@ function BronzeSection({
   isDeadlinePassed,
 }: BronzeSectionProps) {
   const { register } = useFormContext<BetInput>();
+  const solutionBronze = solution?.predictions?.knockout?.bronze;
+  const canCompareBronze = hasNonEmptyTeamCode(solutionBronze);
 
   // Get the two semifinal losers (not in final)
   const finalists = knockoutPredictions.final || [];
@@ -384,10 +447,14 @@ function BronzeSection({
   );
 
   // Get actual bronze winner from solution
-  const actualBronzeWinner = solution?.predictions?.knockout?.bronze || null;
+  const actualBronzeWinner = getKnockoutWinner(solution, "bronze");
 
   // Helper to determine background color for each team
   const getTeamBgColor = (teamCode: string) => {
+    if (!canCompareBronze) {
+      return "bg-white hover:bg-orange-50";
+    }
+
     const isActualBronzeWinner = actualBronzeWinner === teamCode;
     const isUserSelected = selectedBronzeFinalists === teamCode;
 
@@ -431,7 +498,9 @@ function BronzeSection({
           </div>
         </div>
       )}
-      <ResultComparison solution={solution} roundName="bronze" />
+      {canCompareBronze && (
+        <ResultComparison solution={solution} roundName="bronze" />
+      )}
     </div>
   );
 }

@@ -104,13 +104,7 @@ export default function Leaderboard({
                 Namn
               </th>
               <th className="px-4 py-3 text-right font-semibold text-gray-700">
-                Gruppspel
-              </th>
-              <th className="px-4 py-3 text-right font-semibold text-gray-700">
-                Slutspel
-              </th>
-              <th className="px-4 py-3 text-right font-semibold text-gray-700">
-                Totalt
+                Poäng
               </th>
             </tr>
           </thead>
@@ -127,12 +121,6 @@ export default function Leaderboard({
                 </td>
                 <td className="px-4 py-3 font-medium text-gray-900">
                   {entry.username}
-                </td>
-                <td className="px-4 py-3 text-right text-gray-600">
-                  {entry.groupStageScore}
-                </td>
-                <td className="px-4 py-3 text-right text-gray-600">
-                  {entry.knockoutScore}
                 </td>
                 <td className="px-4 py-3 text-right font-bold text-gray-900">
                   {entry.totalScore}

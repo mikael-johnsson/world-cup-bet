@@ -15,6 +15,21 @@ interface GroupStageSectionProps {
   solution?: any;
   isDeadlinePassed?: boolean;
 }
+
+type StandingsTableType = "group" | "thirdPlace";
+
+/**
+ * Decides whether a team should be marked as qualified in standings tables.
+ * A row is qualified only when both are true:
+ * 1) It is in a qualification position for that table type.
+ * 2) The team code exists in published solution roundOf32.
+ */
+function isQualifiedForDisplay(
+  teamCode: string,
+  qualifiedRoundOf32TeamCodes: Set<string>,
+): boolean {
+  return qualifiedRoundOf32TeamCodes.has(teamCode);
+}
 /**
  *
  * @param groups - Array of group objects, each containing teams and fixtures
@@ -51,6 +66,21 @@ export default function GroupStageSection({
     () => calculateThirdPlaceStandings(groups, watchedGroupPredictions),
     [groups, watchedGroupPredictions],
   );
+
+  const qualifiedRoundOf32TeamCodes = useMemo(() => {
+    const publishedRoundOf32 = solution?.predictions?.knockout?.roundOf32;
+
+    if (!Array.isArray(publishedRoundOf32)) {
+      return new Set<string>();
+    }
+
+    return new Set(
+      publishedRoundOf32.filter(
+        (teamCode: unknown): teamCode is string =>
+          typeof teamCode === "string" && teamCode.length > 0,
+      ),
+    );
+  }, [solution]);
 
   return (
     <div className="space-y-8">
@@ -91,7 +121,10 @@ export default function GroupStageSection({
                 ))}
               </div>
 
-              <StandingsTable standings={standings} />
+              <StandingsTable
+                standings={standings}
+                qualifiedRoundOf32TeamCodes={qualifiedRoundOf32TeamCodes}
+              />
             </div>
           </div>
         );
@@ -100,7 +133,10 @@ export default function GroupStageSection({
       {/* The third place table */}
       <div className="bg-white p-6 rounded-lg border border-gray-200">
         <h3 className="text-xl font-semibold mb-4">Bästa treor</h3>
-        <ThirdPlaceTable standings={thirdPlaceStandings} />
+        <ThirdPlaceTable
+          standings={thirdPlaceStandings}
+          qualifiedRoundOf32TeamCodes={qualifiedRoundOf32TeamCodes}
+        />
       </div>
     </div>
   );
@@ -112,10 +148,23 @@ export default function GroupStageSection({
  * @returns A styled table showing team standings with points, goal difference, etc.
  * The top 2 teams are highlighted to indicate qualification for knockout stage.
  */
-function StandingsTable({ standings }: { standings: TeamStanding[] }) {
+function StandingsTable({
+  standings,
+  qualifiedRoundOf32TeamCodes,
+}: {
+  standings: TeamStanding[];
+  qualifiedRoundOf32TeamCodes: Set<string>;
+}) {
+  const hasPublishedRoundOf32 = qualifiedRoundOf32TeamCodes.size > 0;
+
   return (
     <div className="w-full overflow-x-auto">
       <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
+        <caption className="sr-only">
+          {hasPublishedRoundOf32
+            ? "Qualified round of 32 teams are available in solution data"
+            : "No published round of 32 teams in solution data yet"}
+        </caption>
         <thead className="bg-gray-100">
           <tr>
             <th className="px-2 py-2 text-left">Pos</th>
@@ -135,7 +184,14 @@ function StandingsTable({ standings }: { standings: TeamStanding[] }) {
                 index < 2 ? "bg-green-100" : index === 2 ? "bg-yellow-100" : ""
               }`}
             >
-              <td className="px-2 py-2">{index + 1}</td>
+              <td className="px-2 py-2">
+                {isQualifiedForDisplay(
+                  team.teamCode,
+                  qualifiedRoundOf32TeamCodes,
+                )
+                  ? `${index + 1} - Q`
+                  : index + 1}
+              </td>
               <td className="px-2 py-2 font-medium">{team.teamCode}</td>
               <td className="px-2 py-2 text-right">{team.played}</td>
               <td className="px-2 py-2 text-right">{team.goalsFor}</td>
@@ -157,10 +213,23 @@ function StandingsTable({ standings }: { standings: TeamStanding[] }) {
  * @param standings - Array of third place team standings to display in the table
  * @returns A styled table showing third place team standings with points, goal difference, etc.
  */
-function ThirdPlaceTable({ standings }: { standings: ThirdPlaceStanding[] }) {
+function ThirdPlaceTable({
+  standings,
+  qualifiedRoundOf32TeamCodes,
+}: {
+  standings: ThirdPlaceStanding[];
+  qualifiedRoundOf32TeamCodes: Set<string>;
+}) {
+  const hasPublishedRoundOf32 = qualifiedRoundOf32TeamCodes.size > 0;
+
   return (
     <div className="w-full overflow-x-auto">
       <table className="w-full text-sm border border-gray-200 rounded-lg overflow-hidden">
+        <caption className="sr-only">
+          {hasPublishedRoundOf32
+            ? "Qualified round of 32 teams are available in solution data"
+            : "No published round of 32 teams in solution data yet"}
+        </caption>
         <thead className="bg-gray-100">
           <tr>
             <th className="px-2 py-2 text-left">Pos</th>
@@ -181,7 +250,14 @@ function ThirdPlaceTable({ standings }: { standings: ThirdPlaceStanding[] }) {
                 index < 8 ? "bg-green-100" : ""
               }`}
             >
-              <td className="px-2 py-2">{index + 1}</td>
+              <td className="px-2 py-2">
+                {isQualifiedForDisplay(
+                  team.teamCode,
+                  qualifiedRoundOf32TeamCodes,
+                )
+                  ? `${index + 1} - Q`
+                  : index + 1}
+              </td>
               <td className="px-2 py-2 font-medium">{team.teamCode}</td>
               <td className="px-2 py-2">{team.groupName}</td>
               <td className="px-2 py-2 text-right">{team.played}</td>

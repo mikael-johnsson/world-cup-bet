@@ -66,7 +66,7 @@ Base URL (local):
 - **URL:** `http://localhost:3000/api/admin/solution`
 - **Headers:**
   - `Content-Type: application/json`
-- **Body:** full solution document with quoted keys (replace `tournamentId`)
+- **Body:** solution document with quoted keys (replace `tournamentId`). Each step of the solution is optional. If parts of the solution is not to be posted, the entire attribute is left out (not lefte with empty value).
 
 ```json
 {

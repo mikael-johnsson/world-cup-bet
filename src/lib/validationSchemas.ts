@@ -42,6 +42,10 @@ export const knockoutProgressionSchema = z.object({
 
 // Optional knockout schema for partial solutions (admin can submit incremental results)
 export const optionalKnockoutProgressionSchema = z.object({
+  roundOf32: z
+    .array(z.string())
+    .length(32, "Must select exactly 32 teams for Round of 32")
+    .optional(),
   roundOf16: z
     .array(z.string())
     .length(16, "Must select exactly 16 teams for Round of 16")
@@ -73,7 +77,7 @@ export const betPredictionsSchema = z.object({
 // Solution predictions allow partial data: groups can be omitted, matches within groups can be empty, and knockout can be partial
 export const solutionPredictionsSchema = z.object({
   groupStage: z.array(optionalGroupStageGroupSchema).optional(),
-  knockout: optionalKnockoutProgressionSchema,
+  knockout: optionalKnockoutProgressionSchema.optional(),
 });
 
 export const betSchema = z.object({

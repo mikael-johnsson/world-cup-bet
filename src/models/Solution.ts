@@ -2,16 +2,17 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface SolutionDocument extends Document {
   tournamentId: string;
-  predictions: {
+  predictions?: {
     groupStage?: Array<{
-      groupName: string;
+      groupName?: string;
       matches?: Array<{
-        matchId: string;
-        predictedHomeGoals: number;
-        predictedAwayGoals: number;
+        matchId?: string;
+        predictedHomeGoals?: number;
+        predictedAwayGoals?: number;
       }>;
     }>;
-    knockout: {
+    knockout?: {
+      roundOf32?: string[]; // 32 advancing team codes
       roundOf16?: string[]; // 16 advancing team codes
       quarterfinals?: string[]; // 8 advancing team codes
       semifinals?: string[]; // 4 advancing team codes
@@ -31,26 +32,49 @@ const solutionSchema = new Schema(
       required: true,
     },
     predictions: {
-      groupStage: [
+      type: new Schema(
         {
-          groupName: { type: String, required: true },
-          matches: [
-            {
-              matchId: { type: String, required: true },
-              predictedHomeGoals: { type: Number, required: true },
-              predictedAwayGoals: { type: Number, required: true },
-            },
-          ],
+          groupStage: {
+            type: [
+              new Schema(
+                {
+                  groupName: { type: String },
+                  matches: {
+                    type: [
+                      new Schema(
+                        {
+                          matchId: { type: String },
+                          predictedHomeGoals: { type: Number },
+                          predictedAwayGoals: { type: Number },
+                        },
+                        { _id: false },
+                      ),
+                    ],
+                  },
+                },
+                { _id: false },
+              ),
+            ],
+          },
+          knockout: {
+            type: new Schema(
+              {
+                roundOf32: { type: [String] },
+                roundOf16: { type: [String] },
+                quarterfinals: { type: [String] },
+                semifinals: { type: [String] },
+                final: { type: [String] },
+                champion: { type: String },
+                bronze: { type: String },
+              },
+              { _id: false },
+            ),
+          },
         },
-      ],
-      knockout: {
-        roundOf16: { type: [String] },
-        quarterfinals: { type: [String] },
-        semifinals: { type: [String] },
-        final: { type: [String] },
-        champion: { type: String },
-        bronze: { type: String },
-      },
+        { _id: false },
+      ),
+      required: false,
+      default: undefined,
     },
   },
   { timestamps: true },

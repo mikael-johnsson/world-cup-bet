@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import GroupStageSection from "./GroupStageSection";
 import KnockoutSection from "./KnockoutSection";
 import Link from "next/link";
+import Heading from "./Heading";
 
 interface BetFormProps {
   tournamentId: string;
@@ -185,7 +186,7 @@ export default function BetForm({
     console.error("Validation blocked submit:", errors);
     setSubmitMessage({
       type: "error",
-      text: "Form is invalid. Check knockout selections.",
+      text: "Tipset är inte korrekt ifyllt, se över slutspelsfasen.",
     });
   };
 
@@ -229,9 +230,7 @@ export default function BetForm({
   if (isAuthLoading) {
     return (
       <div className="space-y-8 max-w-6xl mx-auto">
-        <h1 className="text-3xl text-green-500 font-bold mb-8">
-          World Cup Bet Form
-        </h1>
+        <Heading />
         <div className="p-4 bg-gray-100 text-gray-700 rounded-lg">
           Loading...
         </div>
@@ -243,25 +242,23 @@ export default function BetForm({
   if (!authUser) {
     return (
       <div className="space-y-8 max-w-6xl mx-auto">
-        <h1 className="text-3xl text-green-500 font-bold mb-8">
-          World Cup Bet Form
-        </h1>
+        <Heading />
         <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-blue-900 mb-4">
-            You need to be logged in to submit bets.
+            Du måste vara inloggad för att kunna lämna in ditt tips.
           </p>
           <div className="flex gap-4">
             <Link
               href="/login"
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
             >
-              Log In
+              Logga in
             </Link>
             <Link
               href="/register"
               className="px-4 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 font-medium"
             >
-              Sign Up
+              Registrera
             </Link>
           </div>
         </div>
@@ -316,7 +313,7 @@ export default function BetForm({
           <button
             type="submit"
             disabled={isSubmitting || !isGroupStageFilled || isDeadlinePassed}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold"
+            className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold"
           >
             {isSubmitting ? "Skickar..." : "Skicka in tips"}
           </button>

@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, LoginInput } from "@/lib/validationSchemas";
 import Link from "next/link";
+import Heading from "@/components/Heading";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -48,10 +49,10 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 py-12 px-4">
+      <Heading />
       <div className="w-full max-w-md bg-white rounded-lg shadow p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Logga in</h1>
-
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Logga in</h2>
         {serverError && (
           <div className="mb-4 p-3 bg-red-50 text-red-700 rounded border border-red-200">
             {serverError}

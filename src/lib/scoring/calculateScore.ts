@@ -14,20 +14,29 @@ export async function calculateBetScore(
 ) {
   let groupStageScore = 0;
   let knockoutScore = 0;
+  const solutionGroupStage = solution.predictions?.groupStage ?? [];
+  const solutionKnockout = solution.predictions?.knockout;
 
   // Calculate group stage score
   bet.predictions.groupStage.forEach((groupPrediction) => {
-    const solutionGroupPrediction = solution.predictions.groupStage.find(
+    const solutionGroupPrediction = solutionGroupStage.find(
       (g) => g.groupName === groupPrediction.groupName,
     );
 
-    if (solutionGroupPrediction) {
+    if (solutionGroupPrediction?.matches) {
       // Convert solution matches to scoring format
-      const solutionMatches = solutionGroupPrediction.matches.map((m) => ({
-        matchId: m.matchId,
-        homeGoals: m.predictedHomeGoals,
-        awayGoals: m.predictedAwayGoals,
-      }));
+      const solutionMatches = solutionGroupPrediction.matches
+        .filter(
+          (m) =>
+            typeof m.matchId === "string" &&
+            typeof m.predictedHomeGoals === "number" &&
+            typeof m.predictedAwayGoals === "number",
+        )
+        .map((m) => ({
+          matchId: m.matchId as string,
+          homeGoals: m.predictedHomeGoals as number,
+          awayGoals: m.predictedAwayGoals as number,
+        }));
 
       groupStageScore += calculateGroupStageScore(
         groupPrediction.matches,
@@ -39,7 +48,7 @@ export async function calculateBetScore(
   // Calculate knockout score
   knockoutScore = calculateKnockoutScore(
     bet.predictions.knockout,
-    solution.predictions.knockout,
+    solutionKnockout,
   );
 
   const totalScore = groupStageScore + knockoutScore;

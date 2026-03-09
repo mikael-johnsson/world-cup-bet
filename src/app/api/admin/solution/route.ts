@@ -20,7 +20,8 @@ export async function POST(request: NextRequest) {
     const payload = await request.json();
 
     // Validate input
-    const { tournamentId, predictions } = payload;
+    const tournamentId = payload?.tournamentId;
+    const predictionsPayload = payload?.predictions ?? {};
 
     if (!tournamentId) {
       return NextResponse.json(
@@ -29,7 +30,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const validatedPredictions = solutionPredictionsSchema.parse(predictions);
+    const validatedPredictions =
+      solutionPredictionsSchema.parse(predictionsPayload);
 
     // Check if tournament exists
     const tournament = await Tournament.findById(tournamentId);

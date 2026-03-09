@@ -16,6 +16,18 @@ export default function ResultComparison({
   groupName,
   roundName,
 }: ResultComparisonProps) {
+  const hasNonEmptyTeamArray = (value: unknown): value is string[] => {
+    return (
+      Array.isArray(value) &&
+      value.length > 0 &&
+      value.every((team) => typeof team === "string")
+    );
+  };
+
+  const hasNonEmptyTeamCode = (value: unknown): value is string => {
+    return typeof value === "string" && value.trim().length > 0;
+  };
+
   if (!solution?.predictions) {
     return null;
   }
@@ -55,11 +67,11 @@ export default function ResultComparison({
   }
 
   // Knockout stage result - show which teams advanced to a round
-  if (roundName && solution.predictions.knockout?.[roundName]) {
+  if (roundName) {
     const roundResult = solution.predictions.knockout[roundName];
 
     // For single team fields (champion, bronze)
-    if (typeof roundResult === "string") {
+    if (hasNonEmptyTeamCode(roundResult)) {
       return (
         <div className="text-sm mt-2">
           <span className="text-gray-600 font-medium">Resultat: </span>
@@ -72,6 +84,9 @@ export default function ResultComparison({
 
     // For array fields (roundOf16, quarterfinals, etc.) - don't display here
     // Background colors are applied directly to team selection boxes instead
+    if (hasNonEmptyTeamArray(roundResult)) {
+      return null;
+    }
   }
 
   return null;

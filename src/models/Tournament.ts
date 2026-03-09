@@ -25,6 +25,7 @@ export interface TournamentDocument extends Document {
     }>;
   }>;
   knockout: {
+    roundOf32: { type: [String]; default: [] };
     roundOf16: { type: [String]; default: [] };
     quarterfinals: { type: [String]; default: [] };
     semifinals: { type: [String]; default: [] };
@@ -71,6 +72,7 @@ const tournamentSchema = new Schema(
       },
     ],
     knockout: {
+      roundOf32: { type: [String], default: [] },
       roundOf16: { type: [String], default: [] },
       quarterfinals: { type: [String], default: [] },
       semifinals: { type: [String], default: [] },

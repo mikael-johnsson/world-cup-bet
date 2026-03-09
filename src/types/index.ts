@@ -67,6 +67,30 @@ export interface BetPredictions {
   knockout: KnockoutProgression;
 }
 
+export interface SolutionGroupStagePrediction {
+  groupName?: string;
+  matches?: {
+    matchId?: string;
+    predictedHomeGoals?: number;
+    predictedAwayGoals?: number;
+  }[];
+}
+
+export interface SolutionKnockoutProgression {
+  roundOf32?: string[];
+  roundOf16?: string[];
+  quarterfinals?: string[];
+  semifinals?: string[];
+  final?: string[];
+  champion?: string;
+  bronze?: string;
+}
+
+export interface SolutionPredictions {
+  groupStage?: SolutionGroupStagePrediction[];
+  knockout?: SolutionKnockoutProgression;
+}
+
 export interface Bet {
   _id?: string;
   userId?: string; // Phase 2
@@ -85,7 +109,7 @@ export interface Bet {
 export interface Solution {
   _id?: string;
   tournamentId: string;
-  predictions: BetPredictions;
+  predictions?: SolutionPredictions;
   createdAt?: string; // ISO 8601 date string
 }
 

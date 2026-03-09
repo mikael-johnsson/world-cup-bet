@@ -15,21 +15,11 @@
 - Server components by default, "use client" only when needed
 - Use DRY (Don't repeat yourself) as much as possible
 - Use comments to explain the code (docstrings on functions and single line comments on complex code sections). Explain it so a junior developer with less than one year of experience can understand.
-- Update the relevant documentation in the docs folder after each implementation - if necessary
+- Update the relevant documentation in the docs folder after each implementation, if necessary
 
 ## Preferences
 
 - I prefer NextJS over separate Express backend
 - I like iterative development (get basics working first)
 - Explain trade-offs when there are multiple approaches
-
-## Learning Goals
-
-- Understand full-stack architecture
-- Master React Hook Form patterns
-- Learn MongoDB relationships and queries
-
-## Phase Tracking
-
-- Currently in: Phase 1 (MVP Core)
-- Next up: Phase 2 (Authentication)
+- Please only speak english, even if the codebase contains comments in another language

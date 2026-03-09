@@ -15,45 +15,51 @@ import { KnockoutProgression } from "@/types";
  */
 export function calculateKnockoutScore(
   prediction: KnockoutProgression,
-  solution: KnockoutProgression,
+  solution?: Partial<KnockoutProgression>,
 ): number {
   let score = 0;
+  const solutionRoundOf16 = solution?.roundOf16 ?? [];
+  const solutionQuarterfinals = solution?.quarterfinals ?? [];
+  const solutionSemifinals = solution?.semifinals ?? [];
+  const solutionFinal = solution?.final ?? [];
+  const solutionChampion = solution?.champion;
+  const solutionBronze = solution?.bronze;
 
   // Score Round of 16 (16 teams selected correctly)
   prediction.roundOf16.forEach((team) => {
-    if (solution.roundOf16.includes(team)) {
+    if (solutionRoundOf16.includes(team)) {
       score += 1;
     }
   });
 
   // Score Quarterfinals (8 teams)
   prediction.quarterfinals.forEach((team) => {
-    if (solution.quarterfinals.includes(team)) {
+    if (solutionQuarterfinals.includes(team)) {
       score += 1;
     }
   });
 
   // Score Semifinals (4 teams)
   prediction.semifinals.forEach((team) => {
-    if (solution.semifinals.includes(team)) {
+    if (solutionSemifinals.includes(team)) {
       score += 1;
     }
   });
 
   // Score Final (2 teams)
   prediction.final.forEach((team) => {
-    if (solution.final.includes(team)) {
+    if (solutionFinal.includes(team)) {
       score += 1;
     }
   });
 
   // Score Champion (1 point)
-  if (prediction.champion === solution.champion) {
+  if (solutionChampion && prediction.champion === solutionChampion) {
     score += 1;
   }
 
   // Score Bronze Medal (1 point for correct winner)
-  if (prediction.bronze === solution.bronze) {
+  if (solutionBronze && prediction.bronze === solutionBronze) {
     score += 1;
   }
 
