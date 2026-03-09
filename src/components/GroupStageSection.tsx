@@ -7,12 +7,18 @@ import {
   calculateGroupStandings,
   calculateThirdPlaceStandings,
 } from "@/lib/standings/calculateGroupStandings";
-import { TeamStanding, ThirdPlaceStanding } from "@/types";
+import {
+  Group,
+  GroupFixture,
+  Solution,
+  TeamStanding,
+  ThirdPlaceStanding,
+} from "@/types";
 import ResultComparison from "./ResultComparison";
 
 interface GroupStageSectionProps {
-  groups: any[];
-  solution?: any;
+  groups: Group[];
+  solution?: Solution | null;
   isDeadlinePassed?: boolean;
 }
 
@@ -108,17 +114,19 @@ export default function GroupStageSection({
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
               <div className="space-y-4">
-                {group.fixtures.map((fixture: any, fixtureIdx: number) => (
-                  <MatchInput
-                    key={fixture.matchId}
-                    groupIdx={groupIdx}
-                    fixtureIdx={fixtureIdx}
-                    fixture={fixture}
-                    solution={solution}
-                    groupName={group.name}
-                    isDeadlinePassed={isDeadlinePassed}
-                  />
-                ))}
+                {group.fixtures.map(
+                  (fixture: GroupFixture, fixtureIdx: number) => (
+                    <MatchInput
+                      key={fixture.matchId}
+                      groupIdx={groupIdx}
+                      fixtureIdx={fixtureIdx}
+                      fixture={fixture}
+                      solution={solution}
+                      groupName={group.name}
+                      isDeadlinePassed={isDeadlinePassed}
+                    />
+                  ),
+                )}
               </div>
 
               <StandingsTable
@@ -278,8 +286,8 @@ function ThirdPlaceTable({
 interface MatchInputProps {
   groupIdx: number;
   fixtureIdx: number;
-  fixture: any;
-  solution?: any;
+  fixture: GroupFixture;
+  solution?: Solution | null;
   groupName: string;
   isDeadlinePassed?: boolean;
 }
@@ -303,9 +311,6 @@ function MatchInput({
   isDeadlinePassed,
 }: MatchInputProps) {
   const { register } = useFormContext<BetInput>();
-
-  const homeTeamCode = fixture.homeTeam.code;
-  const awayTeamCode = fixture.awayTeam.code;
 
   return (
     <div className="space-y-2">

@@ -10,10 +10,11 @@ import GroupStageSection from "./GroupStageSection";
 import KnockoutSection from "./KnockoutSection";
 import Link from "next/link";
 import Heading from "./Heading";
+import { Group, GroupFixture, Solution, Team, TournamentType } from "@/types";
 
 interface BetFormProps {
   tournamentId: string;
-  tournamentData: any; // Full tournament document, this should be changed
+  tournamentData: TournamentType; // Full tournament document
 }
 
 export default function BetForm({
@@ -30,7 +31,7 @@ export default function BetForm({
   } | null>(null);
   const [deadlineDate, setDeadlineDate] = useState<string | null>(null);
   const [isDeadlinePassed, setIsDeadlinePassed] = useState(false);
-  const [solution, setSolution] = useState<any | null>(null);
+  const [solution, setSolution] = useState<Solution | null>(null);
 
   const fetchDeadline = async () => {
     try {
@@ -98,9 +99,9 @@ export default function BetForm({
     defaultValues: existingBet || {
       tournamentId,
       predictions: {
-        groupStage: tournamentData.groups.map((group: any) => ({
+        groupStage: tournamentData.groups.map((group: Group) => ({
           groupName: group.name,
-          matches: group.fixtures.map((fixture: any) => ({
+          matches: group.fixtures.map((fixture: GroupFixture) => ({
             matchId: fixture.matchId,
             predictedHomeGoals: 0,
             predictedAwayGoals: 0,
@@ -153,8 +154,8 @@ export default function BetForm({
     const map = new Map<string, string>();
 
     // Add all teams from all groups
-    tournamentData.groups.forEach((group: any) => {
-      group.teams.forEach((team: any) => {
+    tournamentData.groups.forEach((group: Group) => {
+      group.teams.forEach((team: Team) => {
         map.set(team.code, team.name || team.code);
       });
     });
@@ -303,7 +304,7 @@ export default function BetForm({
           <KnockoutSection
             advancingTeams={advancingTeams}
             allTeams={teamMap}
-            solution={solution}
+            solution={solution ? solution : undefined}
             isDeadlinePassed={isDeadlinePassed}
           />
         )}

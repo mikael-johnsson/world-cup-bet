@@ -19,23 +19,6 @@ export interface Group {
   fixtures: GroupFixture[];
 }
 
-// export interface KnockoutMatch {
-//   matchId: string;
-//   teamA: Team;
-//   teamB: Team;
-//   winner?: string; // team code
-//   matchDate?: string; // ISO 8601 date string from server
-//   status: "pending" | "completed";
-// }
-
-// export interface KnockoutRound {
-//   roundOf32?: KnockoutMatch[];
-//   roundOf16?: KnockoutMatch[];
-//   quarterfinals?: KnockoutMatch[];
-//   semifinals?: KnockoutMatch[];
-//   final?: KnockoutMatch[];
-// }
-
 export interface TournamentType {
   _id?: string;
   year: number;
@@ -84,6 +67,7 @@ export interface SolutionKnockoutProgression {
   final?: string[];
   champion?: string;
   bronze?: string;
+  [key: string]: unknown;
 }
 
 export interface SolutionPredictions {

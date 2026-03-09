@@ -3,6 +3,7 @@
 import { useFormContext, useWatch } from "react-hook-form";
 import { BetInput } from "@/lib/validationSchemas";
 import ResultComparison from "./ResultComparison";
+import { Solution } from "@/types";
 
 type KnockoutSolution = {
   predictions?: {
@@ -27,7 +28,7 @@ function hasNonEmptyTeamCode(value: unknown): value is string {
 }
 
 function getKnockoutRoundTeams(
-  solution: KnockoutSolution | undefined,
+  solution: Solution | undefined,
   roundName: string,
 ): string[] {
   const value = solution?.predictions?.knockout?.[roundName];
@@ -35,7 +36,7 @@ function getKnockoutRoundTeams(
 }
 
 function getKnockoutWinner(
-  solution: KnockoutSolution | undefined,
+  solution: Solution | undefined,
   fieldName: "champion" | "bronze",
 ): string | null {
   const value = solution?.predictions?.knockout?.[fieldName];
@@ -45,7 +46,7 @@ function getKnockoutWinner(
 interface KnockoutSectionProps {
   advancingTeams: string[]; // 32 teams that advanced from groups
   allTeams: Map<string, string>; // team code -> team name mapping
-  solution?: any; // Optional solution data to display actual results
+  solution?: Solution; // Optional solution data to display actual results
   isDeadlinePassed?: boolean; // Whether betting deadline has passed (disables inputs)
 }
 
@@ -172,7 +173,7 @@ interface RoundOf32SectionProps {
   advancingTeams: string[];
   allTeams: Map<string, string>;
   selectedTeams: string[];
-  solution?: any;
+  solution?: Solution;
   isDeadlinePassed?: boolean;
 }
 
@@ -259,7 +260,7 @@ interface ProgressionRoundProps {
   selectedTeams: string[]; // Teams user selected for next round
   selectCount: number; // How many teams should be selected (8, 4, or 2)
   allTeams: Map<string, string>;
-  solution?: any;
+  solution?: Solution;
   solutionRoundName?: string;
   isDeadlinePassed?: boolean;
 }
@@ -346,7 +347,7 @@ interface FinalSectionProps {
   finalists: string[];
   allTeams: Map<string, string>;
   selectedChampion: string;
-  solution?: any;
+  solution?: Solution;
   isDeadlinePassed?: boolean;
 }
 
@@ -421,10 +422,10 @@ function FinalSection({
  */
 interface BronzeSectionProps {
   semifinalLosers: string[];
-  selectedBronzeFinalists: any;
+  selectedBronzeFinalists: string;
   allTeams: Map<string, string>;
   knockoutPredictions: any;
-  solution?: any;
+  solution?: Solution;
   isDeadlinePassed?: boolean;
 }
 
