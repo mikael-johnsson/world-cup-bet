@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 interface LeaderboardEntry {
   rank: number;
@@ -19,13 +20,15 @@ export default function Leaderboard({
   tournamentId,
   limit = 10,
 }: LeaderboardProps) {
+  const { authUser } = useAuth();
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [currentGroup, setCurrentGroup] = useState("default");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchLeaderboard();
-  }, [tournamentId, limit]);
+  }, [tournamentId, limit, authUser?.userId]);
 
   const fetchLeaderboard = async () => {
     try {
@@ -43,6 +46,7 @@ export default function Leaderboard({
 
       const data = await response.json();
       setLeaderboard(data.leaderboard);
+      setCurrentGroup(typeof data.group === "string" ? data.group : "default");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
       console.error("Leaderboard fetch error:", err);
@@ -51,10 +55,17 @@ export default function Leaderboard({
     }
   };
 
+  const leaderboardHeading =
+    currentGroup === "default"
+      ? "Highscore"
+      : `Highscore - Grupp: ${currentGroup}`;
+
   if (isLoading) {
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-xl font-bold text-gray-900">Highscore</h2>
+        <h2 className="mb-4 text-xl font-bold text-gray-900">
+          {leaderboardHeading}
+        </h2>
         <div className="flex justify-center py-8">
           <div className="h-6 w-6 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600"></div>
         </div>
@@ -65,7 +76,9 @@ export default function Leaderboard({
   if (error) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-6">
-        <h2 className="mb-4 text-xl font-bold text-gray-900">Highscore</h2>
+        <h2 className="mb-4 text-xl font-bold text-gray-900">
+          {leaderboardHeading}
+        </h2>
         <div className="flex items-center gap-3 text-red-700">
           <span className="text-lg">⚠️</span>
           <p>{error}</p>
@@ -83,7 +96,9 @@ export default function Leaderboard({
   if (leaderboard.length === 0) {
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-xl font-bold text-gray-900">Highscore</h2>
+        <h2 className="mb-4 text-xl font-bold text-gray-900">
+          {leaderboardHeading}
+        </h2>
         <p className="text-center text-gray-500">Inga tips med poäng än.</p>
       </div>
     );
@@ -91,7 +106,9 @@ export default function Leaderboard({
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6">
-      <h2 className="mb-4 text-xl font-bold text-gray-900">Highscore</h2>
+      <h2 className="mb-4 text-xl font-bold text-gray-900">
+        {leaderboardHeading}
+      </h2>
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">

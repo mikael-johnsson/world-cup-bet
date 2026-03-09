@@ -34,15 +34,15 @@ export default function LoginPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        setServerError(errorData.error || "Login failed");
+        setServerError(errorData.error || "Inloggning misslyckades");
         return;
       }
 
       // Login successful
       router.push("/");
     } catch (error) {
-      setServerError("An unexpected error occurred");
-      console.error("Login error:", error);
+      setServerError("Oväntat fel");
+      console.error("Inloggninsfel:", error);
     } finally {
       setIsLoading(false);
     }
@@ -70,7 +70,7 @@ export default function LoginPage() {
             <input
               id="username"
               type="text"
-              placeholder="Välj ditt användarnamn"
+              placeholder="Ange ditt användarnamn"
               {...register("username")}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isLoading}

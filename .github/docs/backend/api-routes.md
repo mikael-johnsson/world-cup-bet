@@ -496,7 +496,7 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 
 ### 9. GET /api/leaderboard
 
-**Purpose:** Retrieve top-scoring bets with usernames for a tournament.
+**Purpose:** Retrieve top-scoring bets with usernames for a tournament, filtered by group.
 
 **Authentication:** Not required (public endpoint)
 
@@ -509,6 +509,7 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 
 ```json
 {
+  "group": "default",
   "leaderboard": [
     {
       "rank": 1,
@@ -546,9 +547,13 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 
 **Key Implementation Details**
 
-- Returns only bets with `userId` present (authenticated-era bets)
+- Group filtering behavior:
+  - Authenticated user: uses the current user's `group`
+  - Guest user: defaults to `"default"`
+- Returns `group` in response so frontend can show which leaderboard is active
+- Returns only bets belonging to users in the resolved group
 - Ranks by `scoring.totalScore` descending, then `submittedAt` ascending for consistent tie-breaking
-- Uses manual user lookup (queries User collection separately) since `Bet.userId` is string type
+- Uses user lookup from `users` collection to resolve usernames and group members
 - Returns "Unknown" as username fallback if user record not found
 - Empty leaderboard `[]` if no scored bets exist
 - Does NOT trigger scoring calculation (read-only operation)
@@ -559,7 +564,80 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 
 ---
 
-### 10. GET /api/config/betting-deadline
+### 10. PUT /api/user/group
+
+**Purpose:** Update the authenticated user's group.
+
+**Authentication:** Required (HttpOnly cookie)
+
+**Request Body**
+
+```json
+{
+  "group": "friends-2026"
+}
+```
+
+**Validation Rules**
+
+- `group`: required string
+- Trimmed and normalized to lowercase
+- Max length: 30
+- Allowed chars: letters, numbers, spaces, dashes (`^[a-z0-9 -]+$`)
+
+**Response (Success - 200)**
+
+```json
+{
+  "success": true,
+  "message": "Group updated successfully",
+  "group": "friends-2026"
+}
+```
+
+**Response (Error - 401 Not Authenticated)**
+
+```json
+{
+  "error": "Authentication required"
+}
+```
+
+**Code Location**
+
+`src/app/api/user/group/route.ts`
+
+---
+
+### 11. GET /api/groups
+
+**Purpose:** Retrieve all unique groups currently used by users.
+
+**Authentication:** Not required (public endpoint)
+
+**Query Parameters:** None
+
+**Response (Success - 200)**
+
+```json
+{
+  "groups": ["default", "friends-2026", "office-pool"]
+}
+```
+
+**Key Details**
+
+- Reads distinct values from `User.group`
+- Returns groups sorted alphabetically
+- Used by frontend `ChooseGroup` form
+
+**Code Location**
+
+`src/app/api/groups/route.ts`
+
+---
+
+### 12. GET /api/config/betting-deadline
 
 **Purpose:** Retrieve betting deadline configuration and status.
 
@@ -598,7 +676,7 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 
 ---
 
-### 11. GET /api/solutions
+### 13. GET /api/solutions
 
 **Purpose:** Retrieve the current solution (actual tournament results) for a tournament.
 

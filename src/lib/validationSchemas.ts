@@ -108,7 +108,21 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+export const userGroupSchema = z.object({
+  group: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1, "Group is required")
+    .max(30, "Group must be at most 30 characters")
+    .regex(
+      /^[a-z0-9 -]+$/,
+      "Group can only contain letters, numbers, spaces, and dashes",
+    ),
+});
+
 export type BetInput = z.infer<typeof betSchema>;
 export type BetPredictionsInput = z.infer<typeof betPredictionsSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type UserGroupInput = z.infer<typeof userGroupSchema>;

@@ -2,6 +2,7 @@ import connectDB from "@/lib/db";
 import { seedTournament } from "@/lib/seedTournament";
 import BetForm from "@/components/BetForm";
 import Leaderboard from "@/components/Leaderboard";
+import GroupManagement from "@/components/GroupManagement";
 
 export default async function Home() {
   try {
@@ -42,6 +43,7 @@ export default async function Home() {
             {/* Left column: Leaderboard */}
             <div className="lg:col-span-1">
               <Leaderboard tournamentId={tournamentData._id} limit={10} />
+              <GroupManagement />
             </div>
 
             {/* Right column: BetForm */}

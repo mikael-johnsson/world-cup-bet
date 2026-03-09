@@ -32,13 +32,13 @@ export async function POST(request: NextRequest) {
     if (existingUser) {
       if (existingUser.username === normalizedUsername) {
         return NextResponse.json(
-          { error: "Username is already taken" },
+          { error: "Användarnamn är redan taget" },
           { status: 409 },
         );
       }
 
       return NextResponse.json(
-        { error: "Email is already registered" },
+        { error: "Email är redan registrerad" },
         { status: 409 },
       );
     }
@@ -52,12 +52,13 @@ export async function POST(request: NextRequest) {
       lastName: validatedData.lastName.trim(),
       passwordHash,
       role: "user",
+      group: "default",
     });
 
     return NextResponse.json(
       {
         success: true,
-        message: "User registered successfully",
+        message: "Användare registrerades",
         user: {
           id: user._id,
           username: user.username,
@@ -65,6 +66,7 @@ export async function POST(request: NextRequest) {
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role,
+          group: user.group,
         },
       },
       { status: 201 },
@@ -72,7 +74,7 @@ export async function POST(request: NextRequest) {
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Validation error", details: error.issues },
+        { error: "Valideringsfel", details: error.issues },
         { status: 400 },
       );
     }
@@ -84,7 +86,7 @@ export async function POST(request: NextRequest) {
       error.code === 11000
     ) {
       return NextResponse.json(
-        { error: "Username or email already exists" },
+        { error: "Användarnamn eller email finns redan" },
         { status: 409 },
       );
     }

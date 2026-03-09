@@ -408,21 +408,78 @@ interface ISolution {
 
 ### Purpose
 
-Store user accounts for authentication and linking bets.
+Store user accounts for authentication, linking bets, and group-based leaderboard filtering.
 
-### Schema (Placeholder)
+### Schema
 
 ```typescript
 interface IUser {
-  userName: string;
+  username: string;
   email: string;
+  firstName: string;
+  lastName: string;
   passwordHash: string;
   role: "user" | "admin";
+  group: string;
   createdAt: Date;
+  updatedAt: Date;
 }
-````
+```
 
-**Status:** Not implemented in Phase 1. Will be added with JWT authentication.
+### Group Field Rules
+
+- Default value: `"default"` (set during registration via schema default)
+- Stored normalized to lowercase
+- Trimmed before save
+- Max length: 30
+- Allowed characters: letters, numbers, spaces, dashes (`^[a-z0-9 -]+$`)
+
+### Mongoose Schema Details
+
+```typescript
+const userSchema = new Schema(
+  {
+    username: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
+    passwordHash: { type: String, required: true },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+      required: true,
+    },
+    group: {
+      type: String,
+      required: true,
+      default: "default",
+      trim: true,
+      lowercase: true,
+      maxlength: 30,
+      match: /^[a-z0-9 -]+$/,
+    },
+  },
+  { timestamps: true },
+);
+```
+
+### Example Document
+
+```json
+{
+  "_id": "507f1f77bcf86cd799439011",
+  "username": "micke_bets",
+  "email": "micke@example.com",
+  "firstName": "Micke",
+  "lastName": "Andersson",
+  "passwordHash": "$2b$10$examplehash...",
+  "role": "user",
+  "group": "default",
+  "createdAt": "2026-03-09T12:00:00.000Z",
+  "updatedAt": "2026-03-09T12:00:00.000Z"
+}
+```
 
 ---
 
@@ -529,3 +586,4 @@ db.bets.deleteMany({})
 - [API Routes](./api-routes.md) - How models are used in endpoints
 - [Scoring System](./scoring-system.md) - How Bet and Solution are compared
 - [Architecture Overview](../architecture.md) - Database in system context
+````
