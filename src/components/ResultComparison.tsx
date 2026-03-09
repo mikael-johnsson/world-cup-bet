@@ -41,7 +41,7 @@ export default function ResultComparison({
     return (
       <div className="flex items-center gap-2 text-sm mr-3">
         <span className="text-gray-600 font-medium">Resultat:</span>
-        <div className="flex items-center gap-2 bg-green-100 px-2 py-1 rounded">
+        <div className="flex items-center gap-2 px-2 py-1 rounded">
           <span className="font-semibold text-green-500">
             {matchResult.predictedHomeGoals}
           </span>
