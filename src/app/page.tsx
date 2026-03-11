@@ -3,6 +3,7 @@ import { seedTournament } from "@/lib/seedTournament";
 import BetForm from "@/components/BetForm";
 import Leaderboard from "@/components/Leaderboard";
 import GroupManagement from "@/components/GroupManagement";
+import Heading from "@/components/Heading";
 
 export default async function Home() {
   try {
@@ -34,9 +35,7 @@ export default async function Home() {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-10 px-12">
         <div className="max-w-8xl mx-auto">
           <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold text-green-500 mb-2">
-              Mickes VM-tips
-            </h1>
+            <Heading />
             <p className="text-green-500">
               Tipsa på VM 2026! Deadline är innan första matchen startar. Lycka
               till!

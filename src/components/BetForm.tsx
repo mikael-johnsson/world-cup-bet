@@ -231,7 +231,6 @@ export default function BetForm({
   if (isAuthLoading) {
     return (
       <div className="space-y-8 max-w-6xl mx-auto">
-        <Heading />
         <div className="p-4 bg-gray-100 text-gray-700 rounded-lg">
           Loading...
         </div>
