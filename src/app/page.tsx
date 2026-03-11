@@ -6,8 +6,12 @@ import GroupManagement from "@/components/GroupManagement";
 
 export default async function Home() {
   try {
+    console.log("Connecting to database");
+
     // Connect to database
     await connectDB();
+
+    console.log("Connected to the database");
 
     // Seed tournament if it doesn't exist
     const tournament = await seedTournament();
