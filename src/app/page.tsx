@@ -44,7 +44,15 @@ export default async function Home() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left column: Leaderboard */}
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1 lg:sticky lg:top-2 lg:self-start">
+              {/* remove div when real tournament data is loaded */}
+              <div className="rounded-lg border border-gray-200 bg-red-400 text-green-500 p-6 my-5">
+                <p>
+                  OBS! Den här sidan är än så länge laddad med testdata. Riktiga
+                  lag, matcher och tider blir tillgängliga när alla lag är
+                  kvalificerade och matcher bestämda.
+                </p>
+              </div>
               <Leaderboard tournamentId={tournamentData._id} limit={10} />
               <GroupManagement />
             </div>

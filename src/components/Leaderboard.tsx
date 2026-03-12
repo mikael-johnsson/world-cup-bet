@@ -105,7 +105,7 @@ export default function Leaderboard({
   }
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6">
+    <div className="rounded-lg border border-gray-200 bg-white p-6 ">
       <h2 className="mb-4 text-xl font-bold text-gray-900">
         {leaderboardHeading}
       </h2>
