@@ -242,7 +242,6 @@ export default function BetForm({
   if (!authUser) {
     return (
       <div className="space-y-8 max-w-6xl mx-auto">
-        <Heading />
         <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-blue-900 mb-4">
             Du måste vara inloggad för att kunna lämna in ditt tips.
