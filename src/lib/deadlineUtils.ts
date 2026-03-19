@@ -63,7 +63,7 @@ export function getFormattedDeadlineDisplay(): string {
       timeZoneName: "short",
     };
 
-    return deadline.toLocaleString("en-US", options);
+    return deadline.toLocaleString("sv-SE", options);
   } catch {
     return "Deadline not available";
   }

@@ -121,8 +121,17 @@ export const userGroupSchema = z.object({
     ),
 });
 
+export const chatMessageSchema = z.object({
+  message: z
+    .string()
+    .trim()
+    .min(1, "Message is required")
+    .max(2000, "Message must be at most 2000 characters"),
+});
+
 export type BetInput = z.infer<typeof betSchema>;
 export type BetPredictionsInput = z.infer<typeof betPredictionsSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type UserGroupInput = z.infer<typeof userGroupSchema>;
+export type ChatMessageInput = z.infer<typeof chatMessageSchema>;

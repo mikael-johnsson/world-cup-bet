@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { isAfterBettingDeadline } from "@/lib/deadlineUtils";
 
 interface LeaderboardEntry {
   rank: number;
@@ -57,8 +58,8 @@ export default function Leaderboard({
 
   const leaderboardHeading =
     currentGroup === "default"
-      ? "Highscore"
-      : `Highscore - Grupp: ${currentGroup}`;
+      ? "Leaderboard"
+      : `Leaderboard - Grupp: ${currentGroup}`;
 
   if (isLoading) {
     return (
@@ -99,7 +100,11 @@ export default function Leaderboard({
         <h2 className="mb-4 text-xl font-bold text-gray-900">
           {leaderboardHeading}
         </h2>
-        <p className="text-center text-gray-500">Inga tips med poäng än.</p>
+        <p className="text-center text-gray-500">
+          {isAfterBettingDeadline()
+            ? "Antingen har Micke inte laddat upp resultaten än eller så har ingen fått några poäng :/"
+            : "Turneringen har inte börjat än"}
+        </p>
       </div>
     );
   }
@@ -109,6 +114,11 @@ export default function Leaderboard({
       <h2 className="mb-4 text-xl font-bold text-gray-900">
         {leaderboardHeading}
       </h2>
+      <p>
+        Poängräkning: 1p för rätt hemmalagsmål, 1p för rätt bortalagsmål, 1p för
+        rätt resultat (vinst, oavgjort, förlust) + 1p för exakt resultat (rätt
+        hemmalags- och bortalagsmål.).
+      </p>
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">

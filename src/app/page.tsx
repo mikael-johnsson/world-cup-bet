@@ -4,6 +4,7 @@ import BetForm from "@/components/BetForm";
 import Leaderboard from "@/components/Leaderboard";
 import GroupManagement from "@/components/GroupManagement";
 import Heading from "@/components/Heading";
+import ChatPanel from "@/components/ChatPanel";
 
 export default async function Home() {
   try {
@@ -37,14 +38,16 @@ export default async function Home() {
           <div className="mb-8 text-center">
             <Heading />
             <p className="text-green-500">
-              Tipsa på VM 2026! Deadline är innan första matchen startar. Lycka
+              Betta på VM 2026! Deadline är innan första matchen startar. Lycka
               till!
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left column: Leaderboard */}
-            <div className="lg:col-span-1 lg:sticky lg:top-2 lg:self-start">
+            {/* STICKY LEFT SIDE <div className="lg:col-span-1 lg:sticky lg:top-2 lg:self-start"> */}
+
+            <div className="lg:col-span-1">
               {/* remove div when real tournament data is loaded */}
               <div className="rounded-lg border border-gray-200 bg-red-400 text-green-500 p-6 my-5">
                 <p>
@@ -55,10 +58,31 @@ export default async function Home() {
               </div>
               <Leaderboard tournamentId={tournamentData._id} limit={10} />
               <GroupManagement />
+              <div className="mt-6">
+                <ChatPanel />
+              </div>
             </div>
 
             {/* Right column: BetForm */}
             <div className="lg:col-span-2">
+              <p>
+                Fyll i resultaten på alla gruppspelsmatcher, när du är klar
+                väljer du vilka lag som går vidare till åttondelsfinalen. Sen
+                väljer du de lag som går vidare till kvartsfinal, semifinal och
+                till slut vilka som vinner, och vilka som tar bronset.
+              </p>
+              <br />
+              <p>
+                Vill du ändra ditt tips? Nästa gång du loggar in finns det kvar
+                här och väntar på dig. Fram tills turneringen startar kan du
+                ändra ditt tips.
+              </p>
+              <br />
+              <p>
+                Du har väl heller inte glömt att gå med i en grupp här till
+                vänster?
+              </p>
+              <br />
               <BetForm
                 tournamentId={tournamentData._id}
                 tournamentData={tournamentData}

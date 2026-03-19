@@ -75,38 +75,38 @@ export interface SolutionPredictions {
   knockout?: SolutionKnockoutProgression;
 }
 
-export interface Bet {
-  _id?: string;
-  userId?: string; // Phase 2
-  tournamentId: string;
-  predictions: BetPredictions;
-  scoring: {
-    groupStageScore: number;
-    knockoutScore: number;
-    totalScore: number;
-    lastCalculated?: string; // ISO 8601 date string
-  };
-  createdAt?: string; // ISO 8601 date string
-  submittedAt?: string; // ISO 8601 date string
-}
+// export interface Bet {
+//   _id?: string;
+//   userId?: string;
+//   tournamentId: string;
+//   predictions: BetPredictions;
+//   scoring: {
+//     groupStageScore: number;
+//     knockoutScore: number;
+//     totalScore: number;
+//     lastCalculated?: string;
+//   };
+//   createdAt?: string;
+//   submittedAt?: string;
+// }
 
 export interface Solution {
   _id?: string;
   tournamentId: string;
   predictions?: SolutionPredictions;
-  createdAt?: string; // ISO 8601 date string
+  createdAt?: string;
 }
 
-export interface User {
-  _id?: string;
-  username: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  passwordHash: string;
-  role: "user" | "admin";
-  createdAt?: string; // ISO 8601 date string
-}
+// export interface User {
+//   _id?: string;
+//   username: string;
+//   email: string;
+//   firstName: string;
+//   lastName: string;
+//   passwordHash: string;
+//   role: "user" | "admin";
+//   createdAt?: string; // ISO 8601 date string
+// }
 
 export interface TeamStanding {
   teamCode: string;
