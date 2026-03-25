@@ -114,14 +114,14 @@ export default function Leaderboard({
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 ">
-      <h2 className="mb-4 text-xl font-bold text-gray-900">
-        {leaderboardHeading}
-      </h2>
-      <p>
-        Poängräkning: 1p för rätt hemmalagsmål, 1p för rätt bortalagsmål, 1p för
-        rätt resultat (vinst, oavgjort, förlust) + 1p för exakt resultat (rätt
-        hemmalags- och bortalagsmål.).
-      </p>
+      <h2 className="mb-4 text-xl font-bold">{leaderboardHeading}</h2>
+      <div className="my-3">
+        <span className="font-bold">Poängräkning:</span> <br />
+        <p>1p för rätt hemmalagsmål</p>
+        <p>1p för rätt bortalagsmål</p>
+        <p>1p för rätt vinnare (eller oavgjort)</p>
+        <p>+ 1p för exakt resultat (rätt hemmalags- och bortalagsmål).</p>
+      </div>
 
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
