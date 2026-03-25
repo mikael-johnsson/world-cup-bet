@@ -8,7 +8,7 @@ interface GroupManagementProps {
   onGroupChanged?: (group: string) => void;
 }
 
-const GROUP_PATTERN = /^[a-z0-9 -]+$/;
+const GROUP_NAME_MAX_LENGTH = 50;
 
 export default function GroupManagement({
   initialGroup = "default",
@@ -18,8 +18,10 @@ export default function GroupManagement({
 
   const [currentGroup, setCurrentGroup] = useState(initialGroup);
   const [createInput, setCreateInput] = useState("");
+  const [createPassword, setCreatePassword] = useState("");
   const [availableGroups, setAvailableGroups] = useState<string[]>([]);
   const [selectedGroup, setSelectedGroup] = useState(initialGroup);
+  const [joinPassword, setJoinPassword] = useState("");
 
   const [isUpdating, setIsUpdating] = useState(false);
   const [isLoadingGroups, setIsLoadingGroups] = useState(false);
@@ -67,9 +69,11 @@ export default function GroupManagement({
       }
 
       const userGroup =
-        typeof data.group === "string" && data.group.trim().length > 0
+        typeof data.group === "string"
           ? data.group
-          : "default";
+          : typeof data.group?.name === "string"
+            ? data.group.name
+            : "default";
 
       setCurrentGroup(userGroup);
       setSelectedGroup(userGroup);
@@ -90,7 +94,7 @@ export default function GroupManagement({
     loadGroupData();
   }, [authUser]);
 
-  const updateGroup = async (group: string) => {
+  const updateGroup = async (groupName: string, password: string) => {
     try {
       setIsUpdating(true);
       setError(null);
@@ -99,7 +103,7 @@ export default function GroupManagement({
       const response = await fetch("/api/user/group", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ group }),
+        body: JSON.stringify({ groupName, password }),
       });
 
       const data = await response.json();
@@ -108,10 +112,18 @@ export default function GroupManagement({
         throw new Error(data.error || "Misslyckades att skapa grupp");
       }
 
-      const updatedGroup = data.group as string;
+      const updatedGroup =
+        typeof data.group === "string"
+          ? data.group
+          : typeof data.group?.name === "string"
+            ? data.group.name
+            : "default";
+
       setCurrentGroup(updatedGroup);
       setSelectedGroup(updatedGroup);
       setCreateInput("");
+      setCreatePassword("");
+      setJoinPassword("");
       setSuccessMessage("Grupp vald");
       onGroupChanged?.(updatedGroup);
 
@@ -126,26 +138,30 @@ export default function GroupManagement({
   const handleCreateGroupSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
-    const normalized = createInput.trim().toLowerCase();
+    const normalizedName = createInput.trim();
+    const normalizedPassword = createPassword.trim();
 
-    if (!normalized) {
+    if (!normalizedName) {
       setError("En grupp måste anges");
       return;
     }
 
-    if (normalized.length > 30) {
-      setError("Gruppnamn får inte vara längre än 30 tecken");
+    if (normalizedName.length > GROUP_NAME_MAX_LENGTH) {
+      setError("Gruppnamn får inte vara längre än 50 tecken");
       return;
     }
 
-    if (!GROUP_PATTERN.test(normalized)) {
-      setError(
-        "Gruppnamn får bara innehålla bokstäver, siffror, mellanslag och streck",
-      );
+    if (!normalizedPassword) {
+      setError("Lösenord krävs för att skapa grupp");
       return;
     }
 
-    await updateGroup(normalized);
+    if (normalizedPassword.length < 6) {
+      setError("Lösenord måste vara minst 6 tecken");
+      return;
+    }
+
+    await updateGroup(normalizedName, normalizedPassword);
   };
 
   const handleChooseGroupSubmit = async (event: FormEvent) => {
@@ -156,7 +172,18 @@ export default function GroupManagement({
       return;
     }
 
-    await updateGroup(selectedGroup);
+    const normalizedPassword = joinPassword.trim();
+    if (!normalizedPassword) {
+      setError("Lösenord krävs för att gå med i en grupp");
+      return;
+    }
+
+    if (normalizedPassword.length < 6) {
+      setError("Lösenord måste vara minst 6 tecken");
+      return;
+    }
+
+    await updateGroup(selectedGroup, normalizedPassword);
   };
 
   if (isAuthLoading) {
@@ -207,6 +234,14 @@ export default function GroupManagement({
             placeholder="friends-2026"
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-green-500 focus:outline-none"
           />
+          <input
+            id="createGroupPassword"
+            type="password"
+            value={createPassword}
+            onChange={(event) => setCreatePassword(event.target.value)}
+            placeholder="Lösenord"
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-green-500 focus:outline-none"
+          />
           <button
             type="submit"
             disabled={isUpdating}
@@ -238,6 +273,15 @@ export default function GroupManagement({
               </option>
             ))}
           </select>
+          <input
+            id="joinGroupPassword"
+            type="password"
+            value={joinPassword}
+            onChange={(event) => setJoinPassword(event.target.value)}
+            placeholder="Lösenord"
+            className="w-full rounded border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:border-green-500 focus:outline-none"
+            disabled={isLoadingGroups || isUpdating}
+          />
           <button
             type="submit"
             disabled={isUpdating || isLoadingGroups}

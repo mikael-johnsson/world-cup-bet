@@ -7,7 +7,7 @@ export interface UserDocument extends Document {
   lastName: string;
   passwordHash: string;
   role: "user" | "admin";
-  group: string;
+  groupId?: mongoose.Types.ObjectId;
   createdAt?: Date;
 }
 
@@ -24,15 +24,11 @@ const userSchema = new Schema(
       default: "user",
       required: true,
     },
-    // Group controls which users are visible in the leaderboard.
-    group: {
-      type: String,
-      required: true,
-      default: "default",
-      trim: true,
-      lowercase: true,
-      maxlength: 30,
-      match: /^[a-z0-9 -]+$/,
+    // Group relation used for leaderboard visibility and group membership.
+    groupId: {
+      type: Schema.Types.ObjectId,
+      ref: "Group",
+      index: true,
     },
   },
   { timestamps: true },

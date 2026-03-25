@@ -108,7 +108,33 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+// Shared group name rules for the new Group model flows.
+// Relaxed vs previous rules: supports uppercase and a wider set of symbols.
+export const groupNameSchema = z
+  .string()
+  .trim()
+  .min(1, "Group name is required")
+  .max(50, "Group name must be at most 50 characters")
+  .regex(/^[\p{L}\p{N} _'\-.]+$/u, "Group name contains invalid characters");
+
+export const groupPasswordSchema = z
+  .string()
+  .trim()
+  .min(6, "Group password must be at least 6 characters")
+  .max(100, "Group password is too long");
+
+export const createGroupSchema = z.object({
+  groupName: groupNameSchema,
+  password: groupPasswordSchema,
+});
+
+export const joinGroupSchema = z.object({
+  groupName: groupNameSchema,
+  password: groupPasswordSchema,
+});
+
 export const userGroupSchema = z.object({
+  // Legacy schema kept temporarily for the current /api/user/group route.
   group: z
     .string()
     .trim()
@@ -133,5 +159,7 @@ export type BetInput = z.infer<typeof betSchema>;
 export type BetPredictionsInput = z.infer<typeof betPredictionsSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type CreateGroupInput = z.infer<typeof createGroupSchema>;
+export type JoinGroupInput = z.infer<typeof joinGroupSchema>;
 export type UserGroupInput = z.infer<typeof userGroupSchema>;
 export type ChatMessageInput = z.infer<typeof chatMessageSchema>;

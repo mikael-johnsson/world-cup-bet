@@ -10,6 +10,7 @@ All models use Mongoose ODM to interact with MongoDB.
 - `src/models/Bet.ts` - User predictions
 - `src/models/Solution.ts` - Admin actual results
 - `src/models/User.ts` - User accounts (Phase 2)
+- `src/models/Group.ts` - Betting groups with password-protected membership
 
 ---
 
@@ -408,7 +409,7 @@ interface ISolution {
 
 ### Purpose
 
-Store user accounts for authentication, linking bets, and group-based leaderboard filtering.
+Store user accounts for authentication, linking bets, and group-based leaderboard filtering. Users are members of a Group document and participate in group-isolated leaderboards.
 
 ### Schema
 
@@ -420,19 +421,19 @@ interface IUser {
   lastName: string;
   passwordHash: string;
   role: "user" | "admin";
-  group: string;
+  groupId?: ObjectId; // Reference to Group document
   createdAt: Date;
   updatedAt: Date;
 }
 ```
 
-### Group Field Rules
+### Group Membership (groupId)
 
-- Default value: `"default"` (set during registration via schema default)
-- Stored normalized to lowercase
-- Trimmed before save
-- Max length: 30
-- Allowed characters: letters, numbers, spaces, dashes (`^[a-z0-9 -]+$`)
+- Default: New users are assigned to built-in `"default"` Group
+- Type: MongoDB ObjectId reference to Group document
+- Required: All users should have a groupId (set during registration)
+- Allows users to be members of exactly one group at a time
+- Leaving/joining groups updates User.groupId to point to new group
 
 ### Mongoose Schema Details
 
@@ -450,14 +451,10 @@ const userSchema = new Schema(
       default: "user",
       required: true,
     },
-    group: {
-      type: String,
-      required: true,
-      default: "default",
-      trim: true,
-      lowercase: true,
-      maxlength: 30,
-      match: /^[a-z0-9 -]+$/,
+    groupId: {
+      type: Schema.Types.ObjectId,
+      ref: "Group",
+      index: true,
     },
   },
   { timestamps: true },
@@ -475,11 +472,102 @@ const userSchema = new Schema(
   "lastName": "Andersson",
   "passwordHash": "$2b$10$examplehash...",
   "role": "user",
-  "group": "default",
+  "groupId": "507f1f77bcf86cd799439033",
   "createdAt": "2026-03-09T12:00:00.000Z",
   "updatedAt": "2026-03-09T12:00:00.000Z"
 }
 ```
+
+---
+
+## 5. Group Model
+
+**Collection:** `groups`
+
+### Purpose
+
+Represent betting groups with password-protected membership. Users belong to exactly one group. Leaderboards are filtered by group, allowing isolated competitions. A built-in `"default"` group exists for all new users who don't create or join a custom group.
+
+### Schema
+
+```typescript
+interface IGroup {
+  name: string; // Unique group name (e.g., "Friends 2026", "Office Pool")
+  passwordHash: string; // Bcrypt hash of group password
+  users: ObjectId[]; // Array of user IDs that are members
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### Group Name Rules
+
+- Unique across all groups (cannot create two groups with same name)
+- Max length: 50 characters
+- Allowed characters: Unicode letters, digits, spaces, apostrophes, hyphens
+- Regex pattern (relaxed): Supports uppercase, lowercase, accented characters
+
+### Password Rules
+
+- Required when creating or joining a group
+- Min length: 6 characters
+- Max length: 100 characters
+- Stored hashed via bcrypt (same utility as user passwords)
+- Password verification required on join
+
+### Mongoose Schema Details
+
+```typescript
+const GroupSchema = new Schema<IGroup>(
+  {
+    name: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      maxlength: 50,
+    },
+    passwordHash: {
+      type: String,
+      required: true,
+    },
+    users: {
+      type: [Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+    },
+  },
+  { timestamps: true },
+);
+
+GroupSchema.index({ name: 1 }, { unique: true });
+```
+
+### Example Document
+
+```json
+{
+  "_id": "507f1f77bcf86cd799439033",
+  "name": "Friends 2026",
+  "passwordHash": "$2b$10$examplehash...",
+  "users": [
+    "507f1f77bcf86cd799439011",
+    "507f1f77bcf86cd799439012",
+    "507f1f77bcf86cd799439013"
+  ],
+  "createdAt": "2026-01-15T10:00:00.000Z",
+  "updatedAt": "2026-01-20T14:30:00.000Z"
+}
+```
+
+### Default Group
+
+A special group named `"default"` is created automatically during app initialization and acts as a fallback:
+
+- All new users are assigned to this group
+- Cannot be deleted
+- Password set via environment variable `DEFAULT_GROUP_PASSWORD`
+- Helper function: `ensureDefaultGroup()` in `src/lib/ensureDefaultGroup.ts`
 
 ---
 
@@ -491,8 +579,22 @@ Tournament (1)
     └─→ Bet (many) - via tournamentId
     └─→ Solution (1) - via tournamentId
 
-User (1) -----→ Bet (many) - Phase 2
+Group (1)
+    ↓
+    └─→ User (many) - users array contains User ObjectIds
+
+User (1) -----→ Bet (many) - Phase 2 (via userId)
+    ↓
+    └─→ Group (1) - via groupId reference
 ```
+
+### Group-User Relationship
+
+- **Many-to-One:** Multiple users belong to one group (via User.groupId)
+- **One-to-Many:** One group contains multiple users (via Group.users array)
+- **Bidirectional:** Group.users is denormalized for easy access to group members
+- **Assignment:** When user joins/creates a group, User.groupId is updated and user ID is added to Group.users array
+- **Isolation:** Leaderboards filter users by group membership
 
 ### Example Queries
 

@@ -2,6 +2,18 @@
 
 How the dynamic betting form works, including conditional rendering, dependent fields, and user flow.
 
+## Latest Update: Password-Protected Group Management
+
+- `GroupManagement.tsx` now includes two modes: Create and Join
+- **Create mode:** User enters custom group name and sets password
+- **Join mode:** User selects from dropdown list and enters existing group's password
+- Both modes send payload `{groupName, password}` to PUT /api/user/group
+- Backend handles create-or-join logic: if group missing, creates it; if exists, verifies password
+- On success, user is added to group and their User.groupId is updated
+- Form clears and optional `onGroupUpdated()` callback allows parent to refresh UI
+
+---
+
 ## Latest Update: Standings-Driven Group UX
 
 - Group stage defaults use `predictedHomeGoals: 0` and `predictedAwayGoals: 0`.

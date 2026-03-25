@@ -492,11 +492,9 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 
 ---
 
-## Public Routes
-
 ### 9. GET /api/leaderboard
 
-**Purpose:** Retrieve top-scoring bets with usernames for a tournament, filtered by group.
+**Purpose:** Retrieve top-scoring bets with usernames for a tournament, filtered by the authenticated user's group (or `"default"` for guests).
 
 **Authentication:** Not required (public endpoint)
 
@@ -509,7 +507,6 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 
 ```json
 {
-  "group": "default",
   "leaderboard": [
     {
       "rank": 1,
@@ -525,7 +522,8 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
       "groupStageScore": 26,
       "knockoutScore": 16
     }
-  ]
+  ],
+  "group": "Friends 2026"
 }
 ```
 
@@ -545,18 +543,20 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 }
 ```
 
-**Key Implementation Details**
+**Group Filtering Behavior**
 
-- Group filtering behavior:
-  - Authenticated user: uses the current user's `group`
-  - Guest user: defaults to `"default"`
-- Returns `group` in response so frontend can show which leaderboard is active
-- Returns only bets belonging to users in the resolved group
-- Ranks by `scoring.totalScore` descending, then `submittedAt` ascending for consistent tie-breaking
-- Uses user lookup from `users` collection to resolve usernames and group members
+- **Authenticated users:** Uses the current user's group (resolved via User.groupId)
+- **Guest users:** Defaults to `"default"` group
+- **Isolation:** Returns only bets from users who are members of the same group
+- **Ranking:** By `scoring.totalScore` descending, then `submittedAt` ascending for consistent tie-breaking
+
+**Key Details**
+
+- Returns `group` name in response so frontend can display "Leaderboard - [Group Name]"
 - Returns "Unknown" as username fallback if user record not found
-- Empty leaderboard `[]` if no scored bets exist
+- Empty leaderboard `[]` if no scored bets exist in the group
 - Does NOT trigger scoring calculation (read-only operation)
+- No authentication required; group filtering works for both authenticated and guest users
 
 **Code Location**
 
@@ -564,84 +564,11 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 
 ---
 
-### 10. GET /api/user/group
+## Group Management Routes
 
-**Purpose:** Retrieve the authenticated user's current group.
+### 10. GET /api/groups
 
-**Authentication:** Required (HttpOnly cookie)
-
-**Query Parameters:** None
-
-**Response (Success - 200)**
-
-```json
-{
-  "group": "friends-2026"
-}
-```
-
-**Response (Error - 401 Not Authenticated)**
-
-```json
-{
-  "error": "Authentication required"
-}
-```
-
-**Code Location**
-
-`src/app/api/user/group/route.ts`
-
----
-
-### 11. PUT /api/user/group
-
-**Purpose:** Update the authenticated user's group.
-
-**Authentication:** Required (HttpOnly cookie)
-
-**Request Body**
-
-```json
-{
-  "group": "friends-2026"
-}
-```
-
-**Validation Rules**
-
-- `group`: required string
-- Trimmed and normalized to lowercase
-- Max length: 30
-- Allowed chars: letters, numbers, spaces, dashes (`^[a-z0-9 -]+$`)
-
-**Response (Success - 200)**
-
-```json
-{
-  "success": true,
-  "message": "Group updated successfully",
-  "group": "friends-2026"
-}
-```
-
-**Response (Error - 401 Not Authenticated)**
-
-```json
-{
-  "error": "Authentication required"
-}
-```
-
-**Code Location**
-
-`src/app/api/user/group/route.ts`
-
----
-
-### 12. GET /api/groups
-
-**Purpose:** Retrieve all unique groups currently used by users.
+**Purpose:** Retrieve all available groups for group-selection dropdown.
 
 **Authentication:** Not required (public endpoint)
 
@@ -651,19 +578,173 @@ The 2026 World Cup has **48 teams** (12 groups of 4). The knockout progression s
 
 ```json
 {
-  "groups": ["default", "friends-2026", "office-pool"]
+  "groups": [
+    { "id": "507f1f77bcf86cd799439033", "name": "default" },
+    { "id": "507f1f77bcf86cd799439034", "name": "Friends 2026" },
+    { "id": "507f1f77bcf86cd799439035", "name": "Office Pool" }
+  ]
 }
 ```
 
 **Key Details**
 
-- Reads distinct values from `User.group`
-- Returns groups sorted alphabetically
-- Used by frontend `ChooseGroup` form
+- Reads all Group documents sorted by name
+- Returns both group `id` (ObjectId) and `name` for display
+- Used by frontend to populate group dropdown in create/join flows
+- No authentication required (guest users need to see available groups)
 
 **Code Location**
 
 `src/app/api/groups/route.ts`
+
+---
+
+### 11. GET /api/user/group
+
+**Purpose:** Retrieve the authenticated user's current group with name and ID.
+
+**Authentication:** Required (HttpOnly cookie)
+
+**Query Parameters:** None
+
+**Response (Success - 200)**
+
+```json
+{
+  "group": {
+    "id": "507f1f77bcf86cd799439033",
+    "name": "Friends 2026"
+  }
+}
+```
+
+**Response (Error - 401 Not Authenticated)**
+
+```json
+{
+  "error": "Not authenticated"
+}
+```
+
+**Response (Error - 404 Group Not Found)**
+
+```json
+{
+  "error": "Group not found"
+}
+```
+
+**Key Details**
+
+- Returns group as object with both `id` and `name` (not a string)
+- User must have `groupId` reference set
+- Used by frontend to display current group in header and leaderboard title
+- Requires valid authentication token
+
+**Code Location**
+
+`src/app/api/user/group/route.ts` → `GET` handler
+
+---
+
+### 12. PUT /api/user/group
+
+**Purpose:** Create a new group or join an existing group using unified upsert semantics. Both operations require a password.
+
+**Authentication:** Required (HttpOnly cookie)
+
+**Request Body (same for create and join)**
+
+```json
+{
+  "groupName": "Friends 2026",
+  "password": "secret-password-123"
+}
+```
+
+**Validation Rules**
+
+- `groupName`: Required, max 50 characters, Unicode-aware (supports uppercase, accented chars, apostrophes, hyphens)
+- `password`: Required, 6–100 characters
+
+**Response (Success - 200 or 201)**
+
+```json
+{
+  "success": true,
+  "action": "created",
+  "group": {
+    "id": "507f1f77bcf86cd799439033",
+    "name": "Friends 2026"
+  },
+  "message": "Group created and joined successfully"
+}
+```
+
+**Alternative success response (joining existing group)**
+
+```json
+{
+  "success": true,
+  "action": "joined",
+  "group": {
+    "id": "507f1f77bcf86cd799439034",
+    "name": "Friends 2026"
+  },
+  "message": "Joined existing group successfully"
+}
+```
+
+**Response (Error - 401 Not Authenticated)**
+
+```json
+{
+  "error": "Authentication required"
+}
+```
+
+**Response (Error - 403 Invalid Password)**
+
+```json
+{
+  "error": "Invalid group password"
+}
+```
+
+**Response (Error - 400 Validation Error)**
+
+```json
+{
+  "error": "Group name is required and must be less than 50 characters"
+}
+```
+
+**How It Works**
+
+1. **If group with name does not exist:**
+   - Creates new Group document with name, hashed password, and user ID in `users` array
+   - Sets User.groupId to new group's ID
+   - Returns `action: "created"`
+
+2. **If group with name already exists:**
+   - Verifies provided password against stored passwordHash using bcrypt
+   - If password is correct: Adds user ID to group's `users` array and sets User.groupId
+   - If password is wrong: Returns 403 error
+   - Returns `action: "joined"`
+
+3. **Group membership:**
+   - User can only belong to one group at a time
+   - Switching groups removes user from old group's `users` array and adds to new group's `users` array
+
+**Key Design Decisions**
+
+- **Single endpoint for both create and join:** Uses upsert semantics (PUT) rather than separate POST/PATCH routes
+- **Password required for both:** Prevents accidental group creation; ensures explicit access control
+- **Idempotent for already-members:** If user is already in the group, retrying with correct password succeeds (no error)
+
+**Code Location**
+
+`src/app/api/user/group/route.ts` → `PUT` handler
 
 ---
 

@@ -47,6 +47,9 @@ export default function Leaderboard({
 
       const data = await response.json();
       setLeaderboard(data.leaderboard);
+      // Migration-safe: handles both old string response and new object response.
+      // API returns group as string for display; also includes groupSummary and
+      // groupNameLegacy for frontend migration purposes (not used here yet).
       setCurrentGroup(typeof data.group === "string" ? data.group : "default");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");

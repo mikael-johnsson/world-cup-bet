@@ -2,6 +2,16 @@
 
 All React components are in `src/components/` and use TypeScript + Tailwind CSS.
 
+## Latest Update: Group Management with Passwords
+
+- `GroupManagement.tsx` now provides password-protected create/join flows
+- Users can create new groups with custom names and passwords
+- Users can join existing groups by selecting from dropdown and entering password
+- Unified PUT /api/user/group endpoint handles both create and join operations
+- See [GroupManagement.md](./GroupManagement.md) for detailed component documentation
+
+---
+
 ## Latest Update: Live Standings (Phase 1.5)
 
 - `GroupStageSection.tsx` now renders a two-column layout on large screens:

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
+import { DEFAULT_GROUP_NAME } from "@/lib/ensureDefaultGroup";
 import { Bet } from "@/models/Bet";
+import { Group } from "@/models/Group";
 import { User } from "@/models/User";
 import { extractAuthPayload } from "@/lib/authGuards";
 
@@ -54,26 +56,60 @@ export async function GET(request: NextRequest) {
 
     // Determine which group leaderboard should be shown.
     // Guests always see the default group.
-    let targetGroup = "default";
+    let targetGroupId = "";
+    let targetGroupName = DEFAULT_GROUP_NAME;
+
+    const defaultGroup = await Group.findOne({ name: DEFAULT_GROUP_NAME })
+      .select("_id name")
+      .lean();
+
+    if (defaultGroup) {
+      targetGroupId = defaultGroup._id.toString();
+      targetGroupName = defaultGroup.name;
+    }
+
     const authPayload = extractAuthPayload(request);
 
     if (authPayload) {
       const currentUser = await User.findById(authPayload.userId)
-        .select("group")
-        .lean();
-      if (currentUser?.group) {
-        targetGroup = currentUser.group;
+        .select("groupId")
+        .lean<{
+          groupId?: string;
+        }>();
+
+      if (currentUser?.groupId) {
+        const userGroup = await Group.findById(currentUser.groupId)
+          .select("_id name")
+          .lean();
+
+        if (userGroup) {
+          targetGroupId = userGroup._id.toString();
+          targetGroupName = userGroup.name;
+        }
       }
     }
 
+    if (!targetGroupId) {
+      return NextResponse.json(
+        {
+          leaderboard: [],
+          group: targetGroupName,
+        },
+        { status: 200 },
+      );
+    }
+
     // Resolve users that belong to the target group.
-    const groupUsers = await User.find({ group: targetGroup })
+    const groupUsers = await User.find({ groupId: targetGroupId })
       .select("_id username")
       .lean();
 
     if (!groupUsers.length) {
       return NextResponse.json(
-        { leaderboard: [], group: targetGroup },
+        {
+          leaderboard: [],
+          group: targetGroupName,
+        },
         { status: 200 },
       );
     }
@@ -92,7 +128,10 @@ export async function GET(request: NextRequest) {
 
     if (!bets.length) {
       return NextResponse.json(
-        { leaderboard: [], group: targetGroup },
+        {
+          leaderboard: [],
+          group: targetGroupName,
+        },
         { status: 200 },
       );
     }
@@ -112,7 +151,10 @@ export async function GET(request: NextRequest) {
     }));
 
     return NextResponse.json(
-      { leaderboard, group: targetGroup },
+      {
+        leaderboard,
+        group: targetGroupName,
+      },
       { status: 200 },
     );
   } catch (error) {

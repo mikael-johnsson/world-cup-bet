@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { hashPassword, verifyPassword } from "@/lib/auth";
 import connectDB from "@/lib/db";
 import { requireUser } from "@/lib/authGuards";
-import { userGroupSchema } from "@/lib/validationSchemas";
+import { createGroupSchema } from "@/lib/validationSchemas";
+import { Group } from "@/models/Group";
 import { User } from "@/models/User";
 
 /**
@@ -20,14 +22,35 @@ export async function GET(request: NextRequest) {
     await connectDB();
 
     const user = await User.findById(auth.payload!.userId)
-      .select("group")
-      .lean();
+      .select("groupId")
+      .lean<{
+        groupId?: string;
+      }>();
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ group: user.group }, { status: 200 });
+    // User must have a groupId reference (set during migration).
+    if (!user.groupId) {
+      return NextResponse.json(
+        { error: "User has no group assigned" },
+        { status: 400 },
+      );
+    }
+
+    const group = await Group.findById(user.groupId).select("_id name").lean();
+
+    if (!group) {
+      return NextResponse.json({ error: "Group not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(
+      {
+        group: { id: group._id.toString(), name: group.name },
+      },
+      { status: 200 },
+    );
   } catch (error: unknown) {
     const message =
       error instanceof Error ? error.message : "Internal server error";
@@ -51,22 +74,69 @@ export async function PUT(request: NextRequest) {
     await connectDB();
 
     const payload = await request.json();
-    const validatedData = userGroupSchema.parse(payload);
+    const validatedData = createGroupSchema.parse(payload);
 
-    const user = await User.findByIdAndUpdate(
-      auth.payload!.userId,
-      { group: validatedData.group },
-      { new: true },
-    ).lean();
-
+    const user = await User.findById(auth.payload!.userId).select(
+      "_id groupId",
+    );
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    const requestedGroupName = validatedData.groupName.trim();
+    let targetGroup = await Group.findOne({ name: requestedGroupName });
+    let action: "created" | "joined" = "joined";
+
+    if (!targetGroup) {
+      const passwordHash = await hashPassword(validatedData.password);
+      targetGroup = await Group.create({
+        name: requestedGroupName,
+        passwordHash,
+        users: [user._id],
+      });
+      action = "created";
+    } else {
+      const isValidPassword = await verifyPassword(
+        validatedData.password,
+        targetGroup.passwordHash,
+      );
+
+      if (!isValidPassword) {
+        return NextResponse.json(
+          { error: "Invalid group password" },
+          { status: 403 },
+        );
+      }
+
+      await Group.findByIdAndUpdate(targetGroup._id, {
+        $addToSet: { users: user._id },
+      });
+      action = "joined";
+    }
+
+    // Keep Group.users aligned when the user switches from one group to another.
+    if (
+      user.groupId &&
+      user.groupId.toString() !== targetGroup._id.toString()
+    ) {
+      await Group.findByIdAndUpdate(user.groupId, {
+        $pull: { users: user._id },
+      });
+    }
+
+    user.groupId = targetGroup._id;
+    await user.save();
+
     return NextResponse.json({
       success: true,
-      message: "Group updated successfully",
-      group: user.group,
+      action,
+      message: action === "created" ? "Group created" : "Group joined",
+      group: {
+        id: targetGroup._id.toString(),
+        name: targetGroup.name,
+      },
+      // Legacy key kept temporarily during frontend migration.
+      groupNameLegacy: targetGroup.name,
     });
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {

@@ -3,6 +3,10 @@ import { z } from "zod";
 import connectDB from "@/lib/db";
 import { registerSchema } from "@/lib/validationSchemas";
 import { hashPassword } from "@/lib/auth";
+import {
+  DEFAULT_GROUP_NAME,
+  ensureDefaultGroup,
+} from "@/lib/ensureDefaultGroup";
 import { User } from "@/models/User";
 
 /**
@@ -45,6 +49,17 @@ export async function POST(request: NextRequest) {
 
     const passwordHash = await hashPassword(validatedData.password);
 
+    // If a default group password is configured, pass its hash so the helper
+    // can create the default group on first run.
+    const configuredDefaultGroupPassword = process.env.DEFAULT_GROUP_PASSWORD;
+    const defaultGroupPasswordHash = configuredDefaultGroupPassword
+      ? await hashPassword(configuredDefaultGroupPassword)
+      : undefined;
+
+    const defaultGroup = await ensureDefaultGroup({
+      defaultPasswordHash: defaultGroupPasswordHash,
+    });
+
     const user = await User.create({
       username: normalizedUsername,
       email: normalizedEmail,
@@ -52,7 +67,7 @@ export async function POST(request: NextRequest) {
       lastName: validatedData.lastName.trim(),
       passwordHash,
       role: "user",
-      group: "default",
+      groupId: defaultGroup._id,
     });
 
     return NextResponse.json(
@@ -66,7 +81,8 @@ export async function POST(request: NextRequest) {
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role,
-          group: user.group,
+          // Legacy response key kept for frontend compatibility during migration.
+          group: DEFAULT_GROUP_NAME,
         },
       },
       { status: 201 },
