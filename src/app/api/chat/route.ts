@@ -11,11 +11,10 @@ import { runWorkflow } from "@/lib/aiAgent";
  */
 export async function POST(request: NextRequest) {
   try {
-    console.log("POST /api/chat: request received");
+    ("POST /api/chat: request received");
 
     const auth = requireUser(request);
     if (!auth.isAuthenticated) {
-      console.log("POST /api/chat: unauthenticated request");
       return auth.response;
     }
 
@@ -23,16 +22,10 @@ export async function POST(request: NextRequest) {
     try {
       payload = await request.json();
     } catch {
-      console.log("POST /api/chat: invalid JSON body");
       return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
     const validatedData = chatMessageSchema.parse(payload);
-
-    console.log("POST /api/chat: running workflow", {
-      userId: auth.payload!.userId,
-      messageLength: validatedData.message.length,
-    });
 
     const workflowResult = await runWorkflow({
       input_as_text: validatedData.message,
@@ -50,19 +43,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log("POST /api/chat: success", {
-      userId: auth.payload!.userId,
-      branch: workflowResult.branch,
-      replyLength: reply.length,
-    });
-
     return NextResponse.json({
       success: true,
       reply,
     });
   } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-      console.log("POST /api/chat: validation failed", {
+      console.error("POST /api/chat: validation failed", {
         issueCount: error.issues.length,
       });
       return NextResponse.json(

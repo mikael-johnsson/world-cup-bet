@@ -69,7 +69,6 @@ export default function BetForm({
       const response = await fetch(`/api/bets?tournamentId=${tournamentId}`);
       if (response.ok) {
         const data = await response.json();
-        console.log("this is existingBet: ", data);
 
         if (data.predictions) {
           setExistingBet(data as BetInput);
@@ -192,7 +191,6 @@ export default function BetForm({
   };
 
   const onSubmit = async (data: BetInput) => {
-    console.log("Submitting bet:", data);
     setIsSubmitting(true);
     setSubmitMessage(null);
 
