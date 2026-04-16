@@ -59,17 +59,16 @@ export default function Leaderboard({
     }
   };
 
-  const leaderboardHeading =
+  const leaderboardGroup =
     currentGroup === "default"
-      ? "Leaderboard"
-      : `Leaderboard - Grupp: ${currentGroup}`;
+      ? "Grupp: standardgruppen"
+      : `Grupp: ${currentGroup}`;
 
   if (isLoading) {
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-xl font-bold text-gray-900">
-          {leaderboardHeading}
-        </h2>
+        <h2 className="mb-4 text-xl font-bold text-gray-900">Leaderboard</h2>
+        <p className="text-center text-gray-500">Laddar...</p>
         <div className="flex justify-center py-8">
           <div className="h-6 w-6 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600"></div>
         </div>
@@ -80,9 +79,7 @@ export default function Leaderboard({
   if (error) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-6">
-        <h2 className="mb-4 text-xl font-bold text-gray-900">
-          {leaderboardHeading}
-        </h2>
+        <h2 className="mb-4 text-xl font-bold text-gray-900">Leaderboard</h2>
         <div className="flex items-center gap-3 text-red-700">
           <span className="text-lg">⚠️</span>
           <p>{error}</p>
@@ -100,9 +97,7 @@ export default function Leaderboard({
   if (leaderboard.length === 0) {
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-xl font-bold text-gray-900">
-          {leaderboardHeading}
-        </h2>
+        <h2 className="mb-4 text-xl font-bold text-gray-900">Leaderboard</h2>
         <p className="text-center text-gray-500">
           {isAfterBettingDeadline()
             ? "Antingen har Micke inte laddat upp resultaten än eller så har ingen fått några poäng :/"
@@ -114,7 +109,8 @@ export default function Leaderboard({
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 ">
-      <h2 className="mb-4 text-xl font-bold">{leaderboardHeading}</h2>
+      <h2 className="mb-4 text-xl font-bold">Leaderboard</h2>
+      <p className="text-center text-gray-500"> {leaderboardGroup}</p>
       <div className="my-3">
         <span className="font-bold">Poängräkning:</span> <br />
         <p>1p för rätt hemmalagsmål</p>

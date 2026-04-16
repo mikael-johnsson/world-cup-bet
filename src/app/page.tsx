@@ -47,9 +47,9 @@ export default async function Home() {
               {/* remove div when real tournament data is loaded */}
               <div className="rounded-lg border border-gray-200 bg-red-400 text-green-500 p-6 my-5">
                 <p>
-                  OBS! Den här sidan är än så länge laddad med testdata. Riktiga
-                  lag, matcher och tider blir tillgängliga när alla lag är
-                  kvalificerade och matcher bestämda.
+                  OBS! Lag och matchdata stämmer än så länge - men så fort något
+                  ändras så raderas redan lagda bet. Oroa dig inte - du kan
+                  logga in som vanligt och göra om det!
                 </p>
               </div>
               <Leaderboard tournamentId={tournamentData._id} limit={10} />
