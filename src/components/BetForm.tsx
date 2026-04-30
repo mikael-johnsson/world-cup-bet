@@ -9,7 +9,6 @@ import { useAuth } from "@/context/AuthContext";
 import GroupStageSection from "./GroupStageSection";
 import KnockoutSection from "./KnockoutSection";
 import Link from "next/link";
-import Heading from "./Heading";
 import { Group, GroupFixture, Solution, Team, TournamentType } from "@/types";
 
 interface BetFormProps {
@@ -226,7 +225,7 @@ export default function BetForm({
   // If a Bet exists for this user, we should load it and populate the form (not implemented in this snippet)
 
   // Show loading state while checking authentication
-  if (isAuthLoading) {
+  if (isAuthLoading || isLoadingBet) {
     return (
       <div className="space-y-8 max-w-6xl mx-auto">
         <div className="p-4 bg-gray-100 text-gray-700 rounded-lg">

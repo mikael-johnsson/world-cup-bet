@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+// @ts-ignore
 import "./globals.css";
 import Header from "@/components/Header";
 import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata: Metadata = {
-  title: "Mickes VM-tips 2026",
+  title: "Mickes VM-tips",
   description:
     "En betting-app för fotbolls-VM 2026 byggd med Next.js, React Hook Form, och MongoDB",
 };

@@ -92,7 +92,7 @@ export default function GroupStageSection({
     <div className="space-y-8">
       <div>
         <h2 className="text-2xl font-bold mb-6 border-b pb-2">Gruppspel</h2>
-        <p className="text-gray-600 mb-4">
+        <p className="text-gray-600 mb-4 w-full lg:w-3/4">
           Fyll i slutresultatet för varje match i gruppspelet. Ställningen i
           varje grupp och de bästa tredjeplacerade lagen uppdateras dynamiskt.
           Deadline är innan första matchen startar, så du kan ändra ditt tips

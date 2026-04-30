@@ -29,7 +29,7 @@ export default async function Home() {
     const tournamentData = JSON.parse(JSON.stringify(tournament));
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-10 px-12">
+      <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 py-10 px-12">
         <div className="max-w-8xl mx-auto">
           <div className="mb-8 text-center">
             <Heading />
@@ -61,20 +61,20 @@ export default async function Home() {
 
             {/* Right column: BetForm */}
             <div className="lg:col-span-2">
-              <p>
+              <p className="w-full lg:w-4/5">
                 Fyll i resultaten på alla gruppspelsmatcher, när du är klar
                 väljer du vilka lag som går vidare till åttondelsfinalen. Sen
                 väljer du de lag som går vidare till kvartsfinal, semifinal och
                 till slut vilka som vinner, och vilka som tar bronset.
               </p>
               <br />
-              <p>
+              <p className="w-full lg:w-4/5">
                 Vill du ändra ditt tips? Nästa gång du loggar in finns det kvar
                 här och väntar på dig. Fram tills turneringen startar kan du
                 ändra ditt tips.
               </p>
               <br />
-              <p>
+              <p className="w-full lg:w-4/5">
                 Du har väl heller inte glömt att gå med i en grupp här till
                 vänster?
               </p>
