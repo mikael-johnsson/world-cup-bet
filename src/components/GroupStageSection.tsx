@@ -351,7 +351,7 @@ function MatchInput({
           <input
             type="number"
             min="0"
-            max="10"
+            max="99"
             disabled={isDeadlinePassed}
             {...register(
               `predictions.groupStage.${groupIdx}.matches.${fixtureIdx}.predictedAwayGoals`,
