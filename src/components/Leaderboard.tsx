@@ -94,14 +94,13 @@ export default function Leaderboard({
     );
   }
 
-  if (leaderboard.length === 0) {
+  if (!isAfterBettingDeadline()) {
     return (
       <div className="rounded-lg border border-gray-200 bg-white p-6">
         <h2 className="mb-4 text-xl font-bold text-gray-900">Leaderboard</h2>
         <p className="text-center text-gray-500">
-          {isAfterBettingDeadline()
-            ? "Antingen har Micke inte laddat upp resultaten än eller så har ingen fått några poäng :/"
-            : "Turneringen har inte börjat än"}
+          Turneringen har inte startat än. Leaderboard kommer att visas när
+          turneringen har börjat.
         </p>
       </div>
     );
