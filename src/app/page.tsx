@@ -5,7 +5,7 @@ import Leaderboard from "@/components/Leaderboard";
 import GroupManagement from "@/components/GroupManagement";
 import Heading from "@/components/Heading";
 import ChatPanel from "@/components/ChatPanel";
-import { getOdds } from "@/lib/odds";
+import { getOdds } from "@/lib/services/oddsService";
 import Odds from "@/components/Odds";
 
 export default async function Home() {

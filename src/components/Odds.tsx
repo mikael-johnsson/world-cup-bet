@@ -1,6 +1,6 @@
 "use client";
 
-import { getOdds } from "@/lib/odds";
+import { getOdds } from "@/lib/services/oddsService";
 import { type Odds } from "@/types";
 import { useEffect, useState } from "react";
 
