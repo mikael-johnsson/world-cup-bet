@@ -5,6 +5,8 @@ import Leaderboard from "@/components/Leaderboard";
 import GroupManagement from "@/components/GroupManagement";
 import Heading from "@/components/Heading";
 import ChatPanel from "@/components/ChatPanel";
+import { getOdds } from "@/lib/odds";
+import Odds from "@/components/Odds";
 
 export default async function Home() {
   try {
@@ -56,6 +58,7 @@ export default async function Home() {
               <GroupManagement />
               <div className="mt-6">
                 <ChatPanel />
+                <Odds />
               </div>
             </div>
 

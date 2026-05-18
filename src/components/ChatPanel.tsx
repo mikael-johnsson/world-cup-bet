@@ -153,20 +153,6 @@ export default function ChatPanel() {
         <p className="mb-4 text-sm text-blue-800">
           Logga in för att chatta med AI-assistenten.
         </p>
-        <div className="flex gap-3">
-          <Link
-            href="/login"
-            className="rounded bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-          >
-            Logga in
-          </Link>
-          <Link
-            href="/register"
-            className="rounded bg-gray-500 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-600"
-          >
-            Registrera dig
-          </Link>
-        </div>
       </div>
     );
   }

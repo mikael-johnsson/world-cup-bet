@@ -121,3 +121,24 @@ export interface TeamStanding {
 export interface ThirdPlaceStanding extends TeamStanding {
   groupName: string;
 }
+
+export type Odds = {
+  bookmakers: OddsBookmaker[];
+};
+
+export type OddsBookmaker = {
+  key: string;
+  last_update: string;
+  markets: OddsMarket[];
+};
+
+export type OddsMarket = {
+  key: string;
+  lastUpdate: string;
+  outcomes: OddsTeam[];
+};
+
+export type OddsTeam = {
+  name: string;
+  price: number;
+};

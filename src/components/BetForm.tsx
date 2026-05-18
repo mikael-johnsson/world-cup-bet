@@ -10,6 +10,7 @@ import GroupStageSection from "./GroupStageSection";
 import KnockoutSection from "./KnockoutSection";
 import Link from "next/link";
 import { Group, GroupFixture, Solution, Team, TournamentType } from "@/types";
+import { getOdds } from "@/lib/odds";
 
 interface BetFormProps {
   tournamentId: string;
