@@ -14,11 +14,15 @@ import { Group, GroupFixture, Solution, Team, TournamentType } from "@/types";
 interface BetFormProps {
   tournamentId: string;
   tournamentData: TournamentType; // Full tournament document
+  deadlineDate: string;
+  isDeadlinePassed: boolean;
 }
 
 export default function BetForm({
   tournamentId,
   tournamentData,
+  deadlineDate,
+  isDeadlinePassed,
 }: BetFormProps) {
   const { authUser, isAuthLoading, refreshAuth } = useAuth();
   const [existingBet, setExistingBet] = useState<BetInput | null>(null);
@@ -28,22 +32,8 @@ export default function BetForm({
     type: "success" | "error";
     text: string;
   } | null>(null);
-  const [deadlineDate, setDeadlineDate] = useState<string | null>(null);
-  const [isDeadlinePassed, setIsDeadlinePassed] = useState(false);
-  const [solution, setSolution] = useState<Solution | null>(null);
 
-  const fetchDeadline = async () => {
-    try {
-      const response = await fetch("/api/config/betting-deadline");
-      if (response.ok) {
-        const data = await response.json();
-        setDeadlineDate(data.deadline);
-        setIsDeadlinePassed(data.isPassed);
-      }
-    } catch (error) {
-      console.error("Error fetching deadline config:", error);
-    }
-  };
+  const [solution, setSolution] = useState<Solution | null>(null);
 
   const fetchSolution = async () => {
     try {
@@ -82,7 +72,6 @@ export default function BetForm({
 
   useEffect(() => {
     refreshAuth();
-    fetchDeadline();
     fetchSolution();
   }, []);
 

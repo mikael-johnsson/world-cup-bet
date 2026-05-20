@@ -666,13 +666,13 @@ export async function seedTournament() {
     // Check if tournament already exists
     const existing = await Tournament.findOne({ year: 2026 });
     if (existing) {
-      return existing;
+      return existing as TournamentType;
     }
 
     const tournament = await Tournament.create(NEW_TOURNAMENT_DATA);
-    return tournament;
+    return tournament as TournamentType;
   } catch (error) {
     console.error("Error seeding tournament:", error);
-    throw error;
+    throw Error("Error seeding tournament");
   }
 }

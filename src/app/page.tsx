@@ -7,6 +7,7 @@ import Heading from "@/components/Heading";
 import ChatPanel from "@/components/ChatPanel";
 import Odds from "@/components/Odds";
 import { getOdds } from "@/lib/services/oddsService";
+import { getDeadlineStatus } from "@/lib/deadlineUtils";
 
 export default async function Home() {
   try {
@@ -16,6 +17,7 @@ export default async function Home() {
 
     // Seed tournament if it doesn't exist
     const tournament = await seedTournament();
+    const deadlineStatus = getDeadlineStatus();
 
     if (!tournament) {
       return (
@@ -85,6 +87,8 @@ export default async function Home() {
               <BetForm
                 tournamentId={tournamentData._id}
                 tournamentData={tournamentData}
+                deadlineDate={deadlineStatus.deadline}
+                isDeadlinePassed={deadlineStatus.isPassed}
               />
             </div>
           </div>
