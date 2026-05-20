@@ -5,13 +5,14 @@ import Leaderboard from "@/components/Leaderboard";
 import GroupManagement from "@/components/GroupManagement";
 import Heading from "@/components/Heading";
 import ChatPanel from "@/components/ChatPanel";
-import { getOdds } from "@/lib/services/oddsService";
 import Odds from "@/components/Odds";
+import { getOdds } from "@/lib/services/oddsService";
 
 export default async function Home() {
   try {
     // Connect to database
     await connectDB();
+    const odds = await getOdds();
 
     // Seed tournament if it doesn't exist
     const tournament = await seedTournament();
@@ -41,10 +42,9 @@ export default async function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
-            {/* Left column: Leaderboard */}
-            {/* STICKY LEFT SIDE <div className="lg:col-span-1 lg:sticky lg:top-2 lg:self-start"> */}
+          {/* Left column: Leaderboard */}
 
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
             <div className="lg:col-span-1">
               {/* remove div when real tournament data is loaded */}
               <div className="rounded-lg border border-gray-200 bg-red-400 text-green-500 p-6 my-5">
@@ -58,7 +58,7 @@ export default async function Home() {
               <GroupManagement />
               <div className="mt-6">
                 <ChatPanel />
-                <Odds />
+                <Odds odds={odds} />
               </div>
             </div>
 

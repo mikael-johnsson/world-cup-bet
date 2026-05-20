@@ -1,20 +1,12 @@
 "use client";
 
-import { getOdds } from "@/lib/services/oddsService";
 import { type Odds } from "@/types";
-import { useEffect, useState } from "react";
 
-const Odds = () => {
-  const [odds, setOdds] = useState<Odds[]>([]);
+type OddsProps = {
+  odds: Odds[];
+};
 
-  useEffect(() => {
-    const getData = async () => {
-      const odds: Odds[] = await getOdds();
-      setOdds(odds);
-    };
-    getData();
-  }, []);
-
+const Odds = ({ odds }: OddsProps) => {
   if (odds.length === 0) {
     return <p>No odds found</p>;
   }
