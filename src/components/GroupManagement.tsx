@@ -125,6 +125,9 @@ export default function GroupManagement({
       setCreatePassword("");
       setJoinPassword("");
       setSuccessMessage("Grupp vald");
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 4000);
       onGroupChanged?.(updatedGroup);
 
       await fetchGroups();

@@ -10,7 +10,6 @@ import GroupStageSection from "./GroupStageSection";
 import KnockoutSection from "./KnockoutSection";
 import Link from "next/link";
 import { Group, GroupFixture, Solution, Team, TournamentType } from "@/types";
-import { getOdds } from "@/lib/services/oddsService";
 
 interface BetFormProps {
   tournamentId: string;
@@ -188,6 +187,9 @@ export default function BetForm({
       type: "error",
       text: "Tipset är inte korrekt ifyllt, se över slutspelsfasen.",
     });
+    setTimeout(() => {
+      setSubmitMessage(null);
+    }, 5000);
   };
 
   const onSubmit = async (data: BetInput) => {
@@ -211,6 +213,9 @@ export default function BetForm({
         type: "success",
         text: `${result.message}`,
       });
+      setTimeout(() => {
+        setSubmitMessage(null);
+      }, 5000);
 
       // Reset form on successful submission (optional)
       // methods.reset();
@@ -219,6 +224,9 @@ export default function BetForm({
         type: "error",
         text: error.message || "Oväntat fel",
       });
+      setTimeout(() => {
+        setSubmitMessage(null);
+      }, 5000);
     } finally {
       setIsSubmitting(false);
     }
@@ -314,30 +322,27 @@ export default function BetForm({
           >
             {isSubmitting ? "Skickar..." : "Skicka in tips"}
           </button>
+          {submitMessage && (
+            <span
+              className={`p-4 rounded-lg ${
+                submitMessage.type === "success"
+                  ? "bg-green-100 text-green-800 border border-green-300"
+                  : "bg-red-100 text-red-800 border border-red-300"
+              }`}
+            >
+              {submitMessage.text}
+            </span>
+          )}
+          {/* Deadline Passed Message */}
+          {isDeadlinePassed && (
+            <span className="p-4 rounded-lg bg-red-100 text-red-800 border border-red-300">
+              <p className="font-semibold">
+                Deadline för att lämna in tips har passerat.
+              </p>
+              <p className="text-sm mt-1">Inga nya tips kan tas emot.</p>
+            </span>
+          )}
         </div>
-
-        {/* Deadline Passed Message */}
-        {isDeadlinePassed && (
-          <div className="p-4 rounded-lg bg-red-100 text-red-800 border border-red-300">
-            <p className="font-semibold">
-              Deadline för att lämna in tips har passerat.
-            </p>
-            <p className="text-sm mt-1">Inga nya tips kan tas emot.</p>
-          </div>
-        )}
-
-        {/* Messages */}
-        {submitMessage && (
-          <div
-            className={`p-4 rounded-lg ${
-              submitMessage.type === "success"
-                ? "bg-green-100 text-green-800 border border-green-300"
-                : "bg-red-100 text-red-800 border border-red-300"
-            }`}
-          >
-            {submitMessage.text}
-          </div>
-        )}
       </form>
     </FormProvider>
   );
