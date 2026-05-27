@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/Header";
 import { AuthProvider } from "@/context/AuthContext";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Mickes VM-tips",
@@ -22,6 +23,7 @@ export default function RootLayout({
           <Header />
           {children}
         </AuthProvider>
+        <Footer />
       </body>
     </html>
   );
