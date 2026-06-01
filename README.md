@@ -7,6 +7,7 @@ World Cup Bet is a lightweight Next.js application that lets users submit match 
 ## How it works
 
 - Users register and log in to submit predictions for tournament matches.
+- Passwords are hashed and can never be retrieved once entered.
 - Predictions are stored and scored against official solutions; scoring rules live in `src/lib/scoring`.
 - The app exposes several server API routes under `src/app/api` for bets, solutions, leaderboard, groups, and auth.
 - Frontend pages and components render current standings, group-stage tables, knockout brackets, and comparison views.
