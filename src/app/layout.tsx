@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import { AuthProvider } from "@/context/AuthContext";
 import Footer from "@/components/Footer";
+import { Analytics } from "@vercel/analytics/next";
 
 export const metadata: Metadata = {
   title: "Mickes VM-tips",
@@ -19,6 +20,7 @@ export default function RootLayout({
   return (
     <html lang="sv">
       <body>
+        <Analytics />
         <AuthProvider>
           <Header />
           {children}
