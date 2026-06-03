@@ -221,7 +221,11 @@ export default function GroupManagement({
         </p>
       )}
 
-      <form onSubmit={handleCreateGroupSubmit} className="mt-4 space-y-2">
+      <form
+        onSubmit={handleCreateGroupSubmit}
+        autoComplete="off"
+        className="mt-4 space-y-2"
+      >
         <label
           htmlFor="createGroup"
           className="block text-sm font-medium text-gray-700"
@@ -240,6 +244,7 @@ export default function GroupManagement({
           <input
             id="createGroupPassword"
             type="password"
+            autoComplete="new-password"
             value={createPassword}
             onChange={(event) => setCreatePassword(event.target.value)}
             placeholder="Lösenord"
@@ -255,7 +260,11 @@ export default function GroupManagement({
         </div>
       </form>
 
-      <form onSubmit={handleChooseGroupSubmit} className="mt-4 space-y-2">
+      <form
+        onSubmit={handleChooseGroupSubmit}
+        autoComplete="off"
+        className="mt-4 space-y-2"
+      >
         <label
           htmlFor="chooseGroup"
           className="block text-sm font-medium text-gray-700"
@@ -279,6 +288,7 @@ export default function GroupManagement({
           <input
             id="joinGroupPassword"
             type="password"
+            autoComplete="new-password"
             value={joinPassword}
             onChange={(event) => setJoinPassword(event.target.value)}
             placeholder="Lösenord"
