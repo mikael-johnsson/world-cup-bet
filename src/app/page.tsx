@@ -48,14 +48,6 @@ export default async function Home() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-20">
             <div className="lg:col-span-1">
-              {/* remove div when real tournament data is loaded */}
-              <div className="rounded-lg border border-gray-200 bg-red-400 text-green-500 p-6 my-5">
-                <p>
-                  OBS! Lag och matchdata stämmer än så länge - men så fort något
-                  ändras så raderas redan lagda bet. Oroa dig inte - du kan
-                  logga in som vanligt och göra om det!
-                </p>
-              </div>
               <Leaderboard tournamentId={tournamentData._id} limit={10} />
               <GroupManagement />
               <div className="mt-6">
