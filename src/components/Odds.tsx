@@ -10,12 +10,18 @@ const Odds = ({ odds }: OddsProps) => {
   if (odds.length === 0) {
     return <p>No odds found</p>;
   }
+
+  console.log("Received odds:", odds);
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-6 my-5">
       {odds[0].bookmakers.map((bookmaker) => {
         return (
           <div key={bookmaker.key}>
-            <h2 className="mb-4 text-xl font-bold">Senaste oddsen</h2>
+            <h2 className=" text-xl font-bold">Senaste oddsen</h2>
+            <span className="text-sm text-gray-500 mb-5">
+              Senast uppdaterad:{" "}
+              {new Date(bookmaker.last_update).toLocaleString()}
+            </span>
             <div className="flex justify-between">
               <span className="font-bold">Land</span>
               <span className="font-bold">Odds</span>
