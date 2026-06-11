@@ -9,7 +9,7 @@
  * @throws Error if BETTING_DEADLINE env variable is not set
  */
 export function getBettingDeadline(): Date {
-  const deadlineStr = process.env.BETTING_DEADLINE;
+  const deadlineStr = process.env.NEXT_PUBLIC_BETTING_DEADLINE;
 
   if (!deadlineStr) {
     throw new Error("BETTING_DEADLINE environment variable is not set");
