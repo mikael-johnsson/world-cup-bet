@@ -112,8 +112,17 @@ export default function Leaderboard({
       <p className="text-gray-500"> {leaderboardGroup}</p>
       <div className="my-3">
         <span className="font-bold">Poängräkning:</span> <br />
-        <p>3p för rätt slutresultat (rätt vinnare / att det blev oavgjort)</p>
-        <p>+1p för exakt resultat</p>
+        <p>
+          <span className="font-bold">3p </span>för rätt slutresultat (rätt
+          vinnare / att det blev oavgjort)
+        </p>
+        <p>
+          <span className="font-bold">+1p </span>för exakt resultat
+        </p>
+        <p>
+          <span className="font-bold">1p </span>
+          för varje korrekt lag som går vidare från varje omgång (i slutspelet)
+        </p>
       </div>
 
       <div className="overflow-x-auto">
