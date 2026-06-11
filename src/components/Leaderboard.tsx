@@ -112,10 +112,8 @@ export default function Leaderboard({
       <p className="text-gray-500"> {leaderboardGroup}</p>
       <div className="my-3">
         <span className="font-bold">Poängräkning:</span> <br />
-        <p>1p för rätt hemmalagsmål</p>
-        <p>1p för rätt bortalagsmål</p>
-        <p>1p för rätt vinnare (eller oavgjort)</p>
-        <p>+1p för exakt resultat (rätt hemmalags- och bortalagsmål).</p>
+        <p>3p för rätt slutresultat (rätt vinnare / att det blev oavgjort)</p>
+        <p>+1p för exakt resultat</p>
       </div>
 
       <div className="overflow-x-auto">
