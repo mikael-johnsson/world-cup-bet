@@ -685,9 +685,10 @@ interface ResultComparisonProps {
 
 1. **Group Stage Match Results**
    - Displays actual score (home-away goals) for a specific match
-   - Shown in green badges below the prediction inputs
-   - Right-aligned under the score input
-   - Example: "Actual: 2 - 1"
+
+- Shows the earned points for that match: `4 poäng` for an exact score, `3 poäng` for the correct outcome, `0 poäng` otherwise
+- Shown below the prediction inputs and right-aligned under the score input
+- Example: "Resultat: 2 - 1 · 4 poäng"
 
 2. **Knockout Round Results**
    - For array fields (roundOf16, quarterfinals, semifinals, final):

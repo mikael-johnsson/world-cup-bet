@@ -1,3 +1,9 @@
+"use client";
+
+import { useFormContext, useWatch } from "react-hook-form";
+import { BetInput } from "@/lib/validationSchemas";
+import { calculateMatchPoints } from "@/lib/scoring/comparePredictions";
+
 /**
  * ResultComparison Component
  * Displays actual match results from the solution alongside user predictions
@@ -16,6 +22,12 @@ export default function ResultComparison({
   groupName,
   roundName,
 }: ResultComparisonProps) {
+  const { control } = useFormContext<BetInput>();
+  const watchedGroupPredictions = useWatch({
+    control,
+    name: "predictions.groupStage",
+  });
+
   const hasNonEmptyTeamArray = (value: unknown): value is string[] => {
     return (
       Array.isArray(value) &&
@@ -50,10 +62,29 @@ export default function ResultComparison({
       return null;
     }
 
+    const predictedMatch = watchedGroupPredictions
+      ?.find((groupPrediction) => groupPrediction?.groupName === groupName)
+      ?.matches?.find(
+        (matchPrediction) => matchPrediction?.matchId === matchId,
+      );
+
+    const hasPredictedScores =
+      typeof predictedMatch?.predictedHomeGoals === "number" &&
+      typeof predictedMatch?.predictedAwayGoals === "number";
+
+    const matchPoints = hasPredictedScores
+      ? calculateMatchPoints(
+          predictedMatch.predictedHomeGoals,
+          predictedMatch.predictedAwayGoals,
+          matchResult.predictedHomeGoals,
+          matchResult.predictedAwayGoals,
+        )
+      : 0;
+
     return (
-      <div className="flex items-center gap-2 text-sm mr-3">
+      <div className="flex items-center gap-3 text-sm mr-3">
         <span className="text-gray-600 font-medium">Resultat:</span>
-        <div className="flex items-center gap-2 px-2 py-1 rounded">
+        <div className="flex items-center gap-2 px-2 py-1 rounded bg-green-50">
           <span className="font-semibold text-green-500">
             {matchResult.predictedHomeGoals}
           </span>
@@ -61,6 +92,11 @@ export default function ResultComparison({
           <span className="font-semibold text-green-500">
             {matchResult.predictedAwayGoals}
           </span>
+        </div>
+        <div
+          className={`rounded bg-gray-100 px-2 py-1 font-medium text-gray-700 ${matchPoints === 3 ? "bg-green-400" : matchPoints === 4 ? "bg-green-600" : ""}`}
+        >
+          {matchPoints}p
         </div>
       </div>
     );

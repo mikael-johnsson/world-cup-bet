@@ -29,6 +29,36 @@ export function compareMatchResults(
   };
 }
 
+/**
+ * Calculate the points for one match.
+ * 4 points = exact score
+ * 3 points = correct outcome
+ * 0 points = wrong outcome
+ */
+export function calculateMatchPoints(
+  predictedHome: number,
+  predictedAway: number,
+  actualHome: number,
+  actualAway: number,
+): number {
+  const { resultMatch, scoreMatch } = compareMatchResults(
+    predictedHome,
+    predictedAway,
+    actualHome,
+    actualAway,
+  );
+
+  if (scoreMatch) {
+    return 4;
+  }
+
+  if (resultMatch) {
+    return 3;
+  }
+
+  return 0;
+}
+
 export function compareWinner(
   predictedWinnerCode: string,
   actualWinnerCode: string,

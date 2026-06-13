@@ -1,4 +1,4 @@
-import { compareMatchResults } from "./comparePredictions";
+import { calculateMatchPoints } from "./comparePredictions";
 
 export interface GroupStageMatchPrediction {
   matchId: string;
@@ -14,31 +14,20 @@ export interface GroupStageMatchActual {
 
 /**
  * Calculate score for a single group stage match
+ * - 4 points for exact score
  * - 3 points for correct match result (W/D/L)
- * - +1 bonus for exact score
+ * - 0 points otherwise
  */
 export function scoreGroupStageBet(
   prediction: GroupStageMatchPrediction,
   actual: GroupStageMatchActual,
 ): number {
-  const { resultMatch, scoreMatch } = compareMatchResults(
+  return calculateMatchPoints(
     prediction.predictedHomeGoals,
     prediction.predictedAwayGoals,
     actual.homeGoals,
     actual.awayGoals,
   );
-
-  let score = 0;
-
-  if (resultMatch) {
-    score += 3;
-  }
-
-  if (scoreMatch) {
-    score += 1;
-  }
-
-  return score;
 }
 
 /**
