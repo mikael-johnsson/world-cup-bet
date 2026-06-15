@@ -319,17 +319,6 @@ function MatchInput({
           <p className="text-sm font-semibold">
             {fixture.homeTeam.name} - {fixture.awayTeam.name}
           </p>
-          <p className="text-xs text-gray-500">
-            {new Date(fixture.matchDate).toLocaleString("sv-SE", {
-              year: "numeric",
-              month: "2-digit",
-              day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: false,
-              timeZone: "Europe/Stockholm",
-            })}
-          </p>
         </div>
 
         <div className="flex items-center gap-2">

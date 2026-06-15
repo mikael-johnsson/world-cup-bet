@@ -52,7 +52,7 @@ export default async function Home() {
               <GroupManagement />
               <div className="mt-6">
                 <ChatPanel />
-                <Odds odds={odds} />
+                {/* <Odds odds={odds} /> */}
               </div>
             </div>
 
