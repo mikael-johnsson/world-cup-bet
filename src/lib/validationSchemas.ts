@@ -48,7 +48,8 @@ export const optionalKnockoutProgressionSchema = z.object({
     .optional(),
   roundOf16: z
     .array(z.string())
-    .length(16, "Must select exactly 16 teams for Round of 16")
+    // .length(16, "Must select exactly 16 teams for Round of 16")
+    .max(16, "Must select no more than 16 teams for Round of 16")
     .optional(),
   quarterfinals: z
     .array(z.string())
